@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>DVA Final</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <link rel="stylesheet" type="text/css" href="index.css">
+  </head>
+  <body>
+    <div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="index.js"></script>
+    <div class="overflow-auto input-form">
+        <div class="imput-form-inner">
+            <form onsubmit="getPriceDemain();return false">
+                <h4>Location</h4>
+                <div class="form-group row">
+                    <div class="form-group col-sm-6">
+                        <!-- <label for="location">Location</label> -->
+                        <input type="number" step=any class="form-control form-control-sm" id="latitude" placeholder="Latitude" min="-90" max="90" aria-label="latitude" required>
+                        <small id="locationHelp" class="form-text text-muted">Pin on the map.</small> 
+                    </div>
+                    <div class="form-group col-sm-6">
+                        <!-- <label for="location" style="color:white">a</label> -->
+                        <input type="number" step=any class="form-control form-control-sm" id="longitude" placeholder="Longitude" min="-180" max="180" aria-label="longitude" required>
+                    </div>
+                </div>
+                <hr class="separator">
+                <h4>Property Condition</h4>
+                
+                <div class="form-group row">
+                    <div class="form-group col-sm-12">
+                        <label for="avgAvail">Monthly Available</label>
+                        <input type="number" class="form-control form-control-sm" id="avgAvail" placeholder="1 ~ 31" min="1" max="31" required>
+                        <small id="avgAvailHelp" class="form-text text-muted">Anticipated available days in a month.</small> 
+                    </div>
+                    <div class="form-group col-sm-12">
+                        <label for="accommodates">Accommodates</label>
+                        <input type="number" class="form-control form-control-sm" id="accommodates" placeholder="" required>
+                        <small id="accommodatesHelp" class="form-text text-muted">How many people can be accommodated?</small> 
+                    </div>
+                    <div class="form-group col-sm-12">
+                        <label for="beds">Beds</label>
+                        <input type="number" class="form-control form-control-sm" id="beds" placeholder="" required>
+                        <small id="bedsHelp" class="form-text text-muted">How many beds are available?</small>
+                    </div>
+                    <div class="form-group col-sm-12">
+                        <label for="reviewScore">Review Score</label>
+                        <input type="number" step=any class="form-control form-control-sm" id="reviewScore" placeholder="1.0 ~ 100.0" min="1" max="100" required>
+                        <small id="reviewScoreHelp" class="form-text text-muted">Current review score.</small>
+                    </div>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="apt" aria-label="apt">
+                    <small id="aptHelp" class="form-text text-muted">Is the property an apartment?</small>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="house" aria-label="house">
+                    <small id="houseHelp" class="form-text text-muted">Is the property a house?</small>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="entire" aria-label="entire">
+                    <small id="entireHelp" class="form-text text-muted">Are you listing the whole property?</small>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="realbed" aria-label="realbed">
+                    <small id="realbedHelp" class="form-text text-muted">Are the beds real beds or futon/sofa?</small>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="instantBook" aria-label="instantBook">
+                    <small id="instantBookHelp" class="form-text text-muted">Is the property Instantly Bookable?</small>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="phoneVerification" aria-label="phoneVerification">
+                    <small id="phoneVerificationHelp" class="form-text text-muted">Do you require guest’s phone verification?</small>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="wifi" aria-label="wifi">
+                    <small id="wifiHelp" class="form-text text-muted">Is WIFI available?</small>
+                </div>
+
+                <hr class="separator">
+                <h4>Host Information</h4>
+                <div class="form-group row">
+                    <div class="form-group col-sm-12">
+                        <label for="listingCount">Host Listing Counts</label>
+                        <input type="number" class="form-control form-control-sm" id="listingCount" placeholder="" required>
+                        <small id="listingCountHelp" class="form-text text-muted">How many properties listed by you.</small> 
+                    </div> 
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="superHost" aria-label="superHost">
+                    <small id="superHostHelp" class="form-text text-muted">Are you a super host? (4.8+ rating,10+ stays, 0 cancelation, 90%+ response rate)</small>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="identityVerified" aria-label="identityVerified">
+                    <small id="identityVerifiedHelp" class="form-text text-muted">Is your Identity Verified?</small>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="hasPic" aria-label="hasPic">
+                    <small id="hasPicHelp" class="form-text text-muted">Do you have a picture in your profile?</small>
+                </div>
+                <hr class="separator">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+  </body>
+</html>
