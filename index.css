@@ -1,6 +1,15 @@
+div.map {
+	position: absolute;
+	left: 25vw;
+	top: 0;
+	width: 75vw;
+	height: 100vh;
+	z-index: -1;
+	background-color: grey;
+}
 div.input-form {
 	overflow-y: auto;
-	width: 350px;
+	width: 25vw;
 	height:100vh;
 	box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2), 0 0 20px 0 rgba(0, 0, 0, 0.19);
 }

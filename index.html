@@ -12,6 +12,15 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
     <link rel="stylesheet" type="text/css" href="index.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+   integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+   crossorigin=""/>
+   <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+   integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+   crossorigin=""></script>
+   <script src="https://d3js.org/d3.v5.min.js"></script>
+
   </head>
   <body>
     <div>
@@ -21,7 +30,11 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="index.js"></script>
+    
     <div class="overflow-auto input-form">
+    <div class="map">
+
+    </div>
         <div class="imput-form-inner">
             <form onsubmit="getPriceDemain();return false">
                 <h4>Location</h4>
@@ -116,5 +129,152 @@
             </form>
         </div>
     </div>
+
+    <script>
+var w = 350;
+var h = 704.5;
+
+d3.select("body")
+    .append("svg")
+    .attr("width", w)
+    .attr("height", 100)
+    .append("text")
+    .attr("x",w)
+    .attr("y",0)
+    .attr("font-size",50)
+    .attr("class","title")
+
+var markers = []
+var icons = []
+var flag = true;
+        
+d3.tsv("attractions_sample.tsv").then(function(data) { 
+
+    data.forEach(function(d) {
+        d["id"] = +d["id"];
+        d["latitude"] = +d["latitude"];
+        d["longitude"] = +d["longitude"];
+        d["total_nearby_attractions"] = +d["total_nearby_attractions"];})
+     
+    var list_id = [...new Set(data.map(function(d){return d["id"]}))];
+
+    d3.select("body")
+        .append("div")
+        .attr("style","margin-left:" + w/2.2 + 
+            "px; margin-top:" + -10 + "px;" + "font:" + 20 + "px sans-serif")
+        .append("text")
+        .attr("class","text")
+        .text("List id  ")
+        .append("select")
+        .attr("style","font:" + 20 + "px sans-serif")
+        .attr("class","selector")
+        .on('change',onchange)
+        .selectAll('option')
+        .data(list_id).enter()
+        .append('option')
+        .text(function (d) { return d; });
+    
+    d3.select("body")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", 10)
+
+    
+        onchange()
+        
+        function onchange () {
+    
+            d3.select("body").selectAll("body").remove()
+    
+            selectID = d3.select('select').property('value')
+            k = list_id.indexOf(parseInt(selectID))
+        
+
+            d3.select("body")
+                .append("div")
+                .attr("class", "map")
+                .attr("id","map")
+
+            var results = JSON.parse(data[k]["attractions"])
+
+            var map = new L.Map("map", {center: [data[k]["latitude"],data[k]["longitude"]], 
+                zoom: 15,closePopupOnClick:true})
+                .addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+                }));
+
+            var popuph = L.popup({maxWidth:500,offset:[0,0]})
+                .setContent('<center><img src="'+ data[k]["picture_url"] +'" alt="src1" style="width:500px;height:300px;"><br><a href="'+
+                data[k]["listing_url"] + '" target="_blank">AirBnB Link</a><br>Listing entry : ' +
+                data[k]["name"] + '<br>Listed house location :  <a href="https://www.google.com/maps/dir/?api=1&destination=' +
+                data[k]["latitude"] + "," + data[k]["longitude"] +'" target="_blank">' + data[k]["latitude"] + "," + data[k]["longitude"] + 
+                '</a><br>Total nearby attractions : '+ data[k]["total_nearby_attractions"] + '</center>');
+
+            house = L.marker([data[k]["latitude"],data[k]["longitude"]]).addTo(map)
+            house.bindPopup(popuph);
+            
+            house.on('click', function() {
+                house.openPopup();
+                if (flag)
+                    flag = false;
+                else
+                    flag = true;
+            });
+            house.on('mouseover', function() { 
+                house.openPopup(); 
+            });
+            house.on('mouseout', function() {
+                if (flag)
+                    house.closePopup(); 
+            });
+
+   
+            var popup = function(feature, layer) {
+                if (feature.properties && feature.properties.name) {
+                    layer.bindPopup(L.popup({maxWidth:500,offset:[0,0]})
+                    .setContent('<center><b>'+ feature.properties.name +'</b><br>'+ feature.properties.category + 
+                    '<br>Distance from listed house: '+ feature.properties.distance +
+                    'm<br>Location : <a href="https://www.google.com/maps/dir/?api=1&destination='+ feature.geometry.coordinates[1] + 
+                    "," + feature.geometry.coordinates[0] + '" target="_blank">' + 
+                    feature.geometry.coordinates[1] + "," + feature.geometry.coordinates[0] + '</a></center>'),
+                    {closeButton: false});
+                    layer.on('click', function() {
+                        layer.openPopup();
+                        if (flag)
+                            flag = false;
+                        else
+                            flag = true;
+                    });
+                    layer.on('mouseover', function() { 
+                        layer.openPopup(); });
+                    layer.on('mouseout', function() {
+                        if (flag)
+                            layer.closePopup(); 
+                    });
+                }
+            }
+            
+            map.on('click', function() {flag = true});
+            
+            L.geoJson(results, {
+                pointToLayer: function (feature, layer) {
+                    return L.marker([feature.geometry.coordinates[1],feature.geometry.coordinates[0]], 
+                        {
+                        icon: L.icon(
+                            {
+                            iconUrl: feature.properties.icon,
+                            iconSize: [32, 37],
+                            iconAnchor: [16, 37],
+                            popupAnchor: [0, -28]
+                            }
+                        )}
+                    );
+                },onEachFeature:popup
+            }).addTo(map);
+    }
+})
+</script>
+    
+
   </body>
 </html>
