@@ -1,4 +1,4 @@
-function getPriceDemain(){
+async function getPriceDemain(){
 	var proxyUrl = 'https://nameless-sands-81392.herokuapp.com/';
 	let variables = {
 		longitude: document.getElementById("longitude").value,
@@ -41,9 +41,20 @@ function getPriceDemain(){
             body: JSON.stringify(variables),
         }).then(response => response.json());
 
-	Promise.all([pricePromise, demainPromise])
-	.then((data) => {
-		console.log(data);
-	})
+	let data = await Promise.all([pricePromise, demainPromise]);
+
+	//data contains the price and demain 
+	//structure: data = [
+	// 	{
+	// 		price: ...,
+	// 	},
+	// 	{
+	// 		demain: ...
+	// 	}
+	// ]
+	console.log(data);
+	// .then((data) => {
+	// 	console.log(data);
+	// })
 
 }
