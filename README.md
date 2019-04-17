@@ -10,4 +10,5 @@ pip install -r requirements.txt
 ```
 python server.py
 ```
-2. click index.html to open the interface.
+2. Open a browser (prefer Chrome or Safari) and enter the following url:
+	http://localhost:8080/index.html

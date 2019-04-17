@@ -32,15 +32,15 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-    <script src="index.js"></script>
-
-    <div id="mapid" style="width: 350; height: 704.5px;"></div>
+    <div class="mapContainer">
+        <div id="mapid"></div>
+    </div>
     
     <div class="overflow-auto input-form">
         
 
     
-        <div class="imput-form-inner">
+        <div class="input-form-inner">
             <form onsubmit="getPriceDemain();return false">
                 <h4>Location</h4>
                 <div class="form-group row">
@@ -136,49 +136,52 @@
         </div>
     </div>
 
-
+    <script src="index.js"></script>
 
     <script>
         // the map container id is "mapid"
         //**** To do: fix the map location
-var mymap = L.map('mapid').setView([37.75, -122.42], 13);
+// var mymap = L.map('mapid').setView([37.75, -122.42], 13);
+// console.log(mymap);
 
-//Add a layer
+// //Add a layer
 
-L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: 'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(mymap);
+// L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//     maxZoom: 19,
+//     attribution: 'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+// }).addTo(mymap);
 
-//Popup of the estimations
-// ****To do: link the estimation value to the SetContent()
+// //Popup of the estimations
+// // ****To do: link the estimation value to the SetContent()
 
-var popup = L.popup({width:800, offset:[0,0]})
-    .setContent('The suggested price is <br />The estimated number of monthly booking is');
+// var popup = L.popup({width:800, offset:[0,0]})
+//     .setContent('The suggested price is <br />The estimated number of monthly booking is');
 
-//click to put a marker
+// //click to put a marker
 
-var marker = {};
+// var marker = {};
 
-mymap.on('click', function(e){
-  var coord = e.latlng;
+// mymap.on('click', function(e){
+//   var coord = e.latlng;
 
-   if (marker != undefined) {
-              mymap.removeLayer(marker);
-        };
+//    if (marker != undefined) {
+//               mymap.removeLayer(marker);
+//         };
 
-  marker = L.marker(coord, {draggable:true} ).addTo(mymap).bindPopup(popup);
+//   marker = L.marker(coord, {} ).addTo(mymap).bindPopup(popup);
   
-  //get the coordinates for use later
-  var latlng1 = marker.getLatLng();
-  var latlng2 = marker.toGeoJSON();
-  console.log(latlng1);
+//   //get the coordinates for use later
+//   var latlng1 = marker.getLatLng();
+//   var latlng2 = marker.toGeoJSON();
+//   document.getElementById("latitude").value = latlng1.lat;
+//   document.getElementById("longitude").value = latlng1.lng;
+//   console.log(latlng1);
 
-  //****To do: link the coordinates to the input
- //**** TO do: Search for the transportation near the pindown
+//   //****To do: link the coordinates to the input
+//  //**** TO do: Search for the transportation near the pindown
 
  
-});
+// });
 
 
  

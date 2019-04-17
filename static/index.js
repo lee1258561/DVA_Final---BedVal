@@ -1,8 +1,49 @@
+var mymap = L.map('mapid').setView([37.75, -122.42], 13);
+
+//Add a layer
+
+L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: 'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(mymap);
+
+//Popup of the estimations
+// ****To do: link the estimation value to the SetContent()
+
+// var popup = L.popup({width:800, offset:[0,0]})
+//     .setContent('The suggested price is <br />The estimated number of monthly booking is');
+
+//click to put a marker
+
+var marker = {};
+
+mymap.on('click', function(e){
+  	var coord = e.latlng;
+  	//console.log(coord);
+   	if (marker != undefined) {
+    	mymap.removeLayer(marker);
+    };
+
+  	marker = L.marker(coord, {} ).addTo(mymap);
+  
+	//get the coordinates for use later
+	var latlng1 = marker.getLatLng();
+	var latlng2 = marker.toGeoJSON();
+	document.getElementById("latitude").value = latlng1.lat;
+	document.getElementById("longitude").value = latlng1.lng;
+	//**** TO do: Search for the transportation near the pindown
+
+ 
+});
+
+
 async function getPriceDemain(){
 	var proxyUrl = 'https://nameless-sands-81392.herokuapp.com/';
+	let lat = document.getElementById("latitude").value;
+	let lng = document.getElementById("longitude").value;
 	let variables = {
-		longitude: document.getElementById("longitude").value,
-		latitude: document.getElementById("latitude").value,
+		longitude: lng,
+		latitude: lat,
 		avgAvail: document.getElementById("avgAvail").value,
 		accommodates: document.getElementById("accommodates").value,
 		beds: document.getElementById("beds").value,
@@ -53,8 +94,14 @@ async function getPriceDemain(){
 	// 	}
 	// ]
 	console.log(data);
-	// .then((data) => {
-	// 	console.log(data);
-	// })
+
+	if (marker != undefined) {
+    	mymap.removeLayer(marker);
+    };
+  	marker = L.marker([lat, lng], {} ).addTo(mymap)
+  		.bindPopup('The suggested price is ' + data[0].price + 
+  				   '<br />The estimated number of monthly booking is ' + data[1].demain)
+    	.openPopup();
+
 
 }

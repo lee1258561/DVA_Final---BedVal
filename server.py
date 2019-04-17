@@ -1,4 +1,5 @@
-from tornado.web import Application, RequestHandler
+
+from tornado.web import Application, RequestHandler, StaticFileHandler
 from tornado.ioloop import IOLoop
 from Model import Model
 from distance import *
@@ -103,7 +104,8 @@ class demain(RequestHandler):
 def make_app():
     urls = [
         (r"/price", price),
-        (r"/demain", demain)
+        (r"/demain", demain),
+        (r"/(.*)", StaticFileHandler, {'path':'static/'}),
     ]
     return Application(urls, debug=True)
   
