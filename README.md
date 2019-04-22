@@ -17,7 +17,7 @@ python server.py
 
 ## User Visualization
 ### Setup and Run
-The code resource for user visualization is under user_visualization/ directory. To run locally, download the index.html file and the lib folder in the user_visualization directory  to your local directory. Do not change the files in the "lib" folder. The program can be opened immediately if Mozilla browser is used. For Chrome and Safari, local server has to be setup to your local directory to run the index.html file. To setup the local server, follow the above steps for the Host Interface but in your user_interface directory
+The code resource for user visualization is under user_visualization/ directory. Do not change the files in the "lib" folder. The program can be opened immediately if Mozilla browser is used. For Chrome and Safari, local server has to be setup to your local directory to run the index.html file. To setup the local server, follow the above steps for the Host Interface but in your user_interface directory
 
 ### Note
 This web-based program was developed locally and has been tested to work with Chrome and Safari browsers (latest version),
