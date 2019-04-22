@@ -39,32 +39,27 @@
 	
 	.coord {
 	  fill: SteelBlue;
-	  r:3px
 	}
 	
 	.coord-highlight {
 	  fill: LightGreen;
 	  stroke: #000;
 	  stroke-width: 1px;
-	  r:10px
 	}
 	
 	.coord-zoom {
 	  fill: Yellow;
 	  stroke: #000;
 	  stroke-width: 1px;
-	  r:10px
 	}
 	
 	.hide-coord {
-	  r:0px
 	}
 	
 	.coord-hover {
 	  fill: Green;
 	  stroke: #003399;
 	  stroke-width: 1.5px;
-	  r:10px
 	}
   
 </style>
@@ -100,7 +95,7 @@ var g = svg.append("g").attr("class", "leaflet-zoom-hide");
 
 
 //define the promise functions
-var promises = [d3.json("lib/combine-geo.json"),				//the GeoJSON map of San Francisco
+var promises = [d3.json("lib/combine-topo.json"),				//the TopoJSON map of San Francisco and Airbnb coordinates
 				d3.csv("lib/SanFran_data.csv"),					//the AirBnB datasets
 				d3.tsv("lib/SF_host_attr_simp.tsv"),			//the datasets for the nearby attractions for each AirBnB listing
 				d3.tsv("lib/attractions.tsv"),					//the details for each of the attractions
@@ -167,6 +162,8 @@ function ready([sf, data, host_attr, attr, icon]) {
 		svg.selectAll("circle")
 		.attr("class", function(d) {if (d.properties.zipcode == zip){return "coord-zoom"}
 			else {return "hide-coord"};})
+		.attr("r", function(d) {if (d.properties.zipcode == zip){return "10px"}
+			else {return "0px"};})
 		flag2 = true
 	}
 	
@@ -178,6 +175,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 		active = d3.select(null);
 		svg.selectAll("circle")
 				.attr("class","coord")
+				.attr("r","3px")
 		svg.selectAll("path").attr("fill-opacity",0.9)
 		tip2.hide()
 		map.setView(new L.LatLng(37.76074, -122.43952),13);
@@ -191,7 +189,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 		tip2.show(d)
 		if (flag2) {
 			d3.select(".leaflet-marker-pane").selectAll("img").remove()
-			d3.select(this).attr("class","coord-highlight")
+			d3.select(this).attr("class","coord-highlight").attr("r","10px")
 
 
 			var host_ele = JSON.parse(host_attr.find(function(element){ if (element.host_id == d.properties.id) {return element}}).attractions)
@@ -253,9 +251,9 @@ function ready([sf, data, host_attr, attr, icon]) {
 			flag2 = false; 
 					 d3.select(".leaflet-marker-pane").selectAll("img").remove()
 
-			svg.selectAll("circle").attr("class","hide-coord")
+			svg.selectAll("circle").attr("class","hide-coord").attr("r","0px")
 			svg.selectAll("path").attr("fill-opacity","0.2")
-			d3.select(this).attr("class","coord-highlight")
+			d3.select(this).attr("class","coord-highlight").attr("r","10px")
 	
 
 
@@ -332,14 +330,15 @@ function ready([sf, data, host_attr, attr, icon]) {
 	//define the data points based on the listing data
 	var points = g.append("g")
 		.selectAll("circle")
-		.data(topojson.feature(sf, sf.objects[Object.keys(sf.objects)[1]]).features)
+		.data(topojson.feature(sf, sf.objects.host).features)
 		.enter().append("circle")
+		.attr("r", function(d) {if (flag) {return "3px"} else {return "10px"}})
 		.attr("class", function(d) {if (flag) {return "coord"} else {return "coord-zoom"}})
 		.on("click", pointClick)
 		.on('mouseover', pointHover)
-		.on('mouseout', function(d,i) {if (flag2) {if (map.getZoom() > 15) {d3.select(this).attr("class","coord-zoom")}
-										else if(map.getZoom() <= 15 && flag == true) {d3.select(this).attr("class","coord")}
-										else {d3.select(this).attr("class","coord-zoom")};
+		.on('mouseout', function(d,i) {if (flag2) {if (map.getZoom() > 15) {d3.select(this).attr("class","coord-zoom").attr("r","10px")}
+										else if(map.getZoom() <= 15 && flag == true) {d3.select(this).attr("class","coord").attr("r","3px")}
+										else {d3.select(this).attr("class","coord-zoom").attr("r","10px")};
 											 tip2.hide(d,i)}})
 
 
@@ -385,13 +384,13 @@ function ready([sf, data, host_attr, attr, icon]) {
 
 		  
 		if (map.getZoom() > 15 && flag == true && flag2 == true) {
-			svg.selectAll("circle").attr("class","coord-zoom")
+			svg.selectAll("circle").attr("class","coord-zoom").attr("r","10px")
 			svg.selectAll("path").attr("fill-opacity",0.1).attr("stroke-width", "3px")
 			console.log(flag)
 		}
 
 		else if (map.getZoom() <= 15 && flag == true && flag2 == true) {
-			svg.selectAll("circle").attr("class","coord")
+			svg.selectAll("circle").attr("class","coord").attr("r","3px")
 			svg.selectAll("path").attr("fill-opacity",0.9).attr("stroke-width", "1.5px")
 		}
 	
@@ -425,7 +424,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 			g.append("rect")
 				.attr("class","legend")
 				.attr("width", 400)
-				.attr("height", 500)
+				.attr("height", 520)
 				.attr("transform", "translate(" + (topLeft[0] + 910) + ","+ (topLeft[1]+80) + ")")
 				.attr("fill", "#ffffcc")
 				.attr("fill-opacity", 0.7)
@@ -438,7 +437,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 				.attr("transform", "translate(" + (topLeft[0] + 920) + ","+ (topLeft[1]+100) + ")")
 				.append("xhtml:body")
 				.style("font", "12px 'Helvetica Neue'")
-				.html("<h1><center>Visualisation of AirBnB in San Francisco</center></h1><p> The map shows the distribution of AirBnB host in San Francisco city. This web based app will make it easier for AirBnB user to find any listings quickly and shows the necessary details and the nearby attractions to each listing" +
+				.html("<h1><center>Visualisation of AirBnB in San Francisco</center></h1><p>The map shows the distribution of AirBnB host in San Francisco city. This web based app will make it easier for AirBnB user to find any listings quickly and shows the necessary details and the nearby attractions to each listing" +
 				"<br><br>The city is divided by its zipcode tabulation area (ZCTA was obtained from <a href=https://www.census.gov/developers/ target=_blank>Census Bureau</a>) and each ZCTA was coloured based on its frequency." + 
 				"<br><br> Each point correspond to an AirBnB listing. There's a total of 7151 AirBnB listing at the time of this visualisation was made. Data was pulled from <a href = http://insideairbnb.com/get-the-data.html target=_blank>AirBnB website</a>." +
 				"<br><br>Double click the ZCTA segment to show only the listings in that zipcode area, double click again to reset view" +
