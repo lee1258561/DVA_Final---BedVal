@@ -353,7 +353,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 			var min = Math.floor(d3.min(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_review); }))*0
 			var cScale = d3.scaleThreshold()
 			.domain(d3.range(min,max,(max-min)/9))
-			.range(d3.schemeYlOrBr[9])
+			.range(d3.schemeYlOrRd[9])
 		}
 
 		//the bound of the svg is based on the Topojson boundary of the San Francisco map
