@@ -1,5 +1,5 @@
 # DVA_Final---BedVal
-##Host Interface
+## Host Interface
 ### Setup
 1. Download data from https://drive.google.com/file/d/1deODOOpRnlfjZkFAGrQaUMTOR8RSf7cO/view?usp=sharing to host_interface/, unzip and make sure there is a directory data/ under host_interface/ directory.
 2. 
@@ -15,7 +15,7 @@ python server.py
 2. Open a browser (prefer Chrome or Safari) and enter the following url:
 	http://localhost:8080/index.html
 
-##User Visualization
+## User Visualization
 ### Setup and Run
 The code resource for user visualization is under user_visualization/ directory.
 ### Note
@@ -29,4 +29,4 @@ Again, this program was only tested to work with Chrome and Safari browser.
 
 [Github link](https://asaj3.github.io/)
 
-###Supervised Learning & Experiments
+### Supervised Learning & Experiments
