@@ -385,7 +385,6 @@ function ready([sf, data, host_attr, attr, icon]) {
 		if (map.getZoom() > 15 && flag == true && flag2 == true) {
 			svg.selectAll("circle").attr("class","coord-zoom").attr("r","10px")
 			svg.selectAll("path").attr("fill-opacity",0.1).attr("stroke-width", "3px")
-			console.log(flag)
 		}
 
 		else if (map.getZoom() <= 15 && flag == true && flag2 == true) {
