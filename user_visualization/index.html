@@ -342,18 +342,18 @@ function ready([sf, data, host_attr, attr, icon]) {
 			.range(d3.schemeOrRd[9])
 		}
 		else if (counter == 1) {
-			var max = Math.ceil(d3.max(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_price); }))
-			var min = Math.ceil(d3.min(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_price); }))
+			var max = Math.ceil(d3.max(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_price);})/100 )*100 + 100
+			var min = Math.ceil(d3.min(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_price);})/100 )*100
 			var cScale = d3.scaleThreshold()
-			.domain(d3.range(min,max,(max-min)/9))
-			.range(d3.schemeYlGn[9])
+			.domain(d3.range(min,max,(max-min)/6))
+			.range(d3.schemeYlGn[6])
 		}
 		else if (counter == 2) {
 			var max = Math.ceil(d3.max(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_review); }))+1
 			var min = Math.ceil(d3.min(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_review); }))
 			var cScale = d3.scaleThreshold()
 			.domain(d3.range(min,max,(max-min)/4))
-			.range(d3.schemeYlOrRd[4])
+			.range(d3.schemeRdPu[4])
 		}
 
 		//the bound of the svg is based on the Topojson boundary of the San Francisco map
@@ -497,9 +497,11 @@ function ready([sf, data, host_attr, attr, icon]) {
 				.attr("transform", "translate(" + (topLeft[0] + 830) + "," + (topLeft[1]+140 +30) + ")")
 				.call(d3.axisRight(yScale)
 				.tickSize(30)
-				.tickFormat(function(d, i) {if (i==0) {return "\u2264 " + Math.ceil(d);} 
-					else if (i==7){return "\u2265 " + Math.ceil(d) } 
-					else {return "\u00A0\t" + Math.ceil(d);}})
+				.tickFormat(function(d, i) {if (counter == 1 ) {if (i==0) {return "\u00A0\t$" + Math.ceil(d);} 
+					else if (i==7){return "\u00A0\t$" + Math.ceil(d) } 
+					else {return "\u00A0\t$" + Math.ceil(d);}} else {if (i==0) {return "\u00A0\t" + Math.ceil(d);} 
+					else if (i==7){return "\u00A0\t" + Math.ceil(d) } 
+					else {return "\u00A0\t" + Math.ceil(d);}}})
 				.tickValues(tickRange))
 				.select(".domain")
 				.remove();
