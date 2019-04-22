@@ -15,6 +15,8 @@ python server.py
 2. Open a browser (prefer Chrome or Safari) and enter the following url:
 	http://localhost:8080/index.html
 
+
+
 ## User Visualization
 ### Setup and Run
 The code resource for user visualization is under user_visualization/ directory. Do not change the files in the "lib" folder. The program can be opened immediately if Mozilla browser is used. For Chrome and Safari, local server has to be setup to your local directory to run the index.html file. To setup the local server, follow the above steps for the Host Interface but in your user_interface directory
@@ -28,6 +30,8 @@ The following Github repo is a self contain server that can open our web-based p
 It has been tested to work with Chrome, Safari and Mozilla browser.
 
 [Github link](https://asaj3.github.io/)
+
+
 
 ## Supervised Learning & Experiment
 Make sure the combined1.csv dataset is under the same folder with the scripts. Open a script and run the code, it will generate the results in the Python shell automatically. 
