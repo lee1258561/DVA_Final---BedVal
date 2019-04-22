@@ -29,5 +29,5 @@ It has been tested to work with Chrome, Safari and Mozilla browser.
 
 [Github link](https://asaj3.github.io/)
 
-### Supervised Learning & Experiment
+## Supervised Learning & Experiment
 Make sure the combined1.csv dataset is under the same folder with the scripts. Open a script and run the code, it will generate the results in the Python shell automatically. 
