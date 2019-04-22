@@ -1,0 +1,33 @@
+div.mapContainer {
+	position: absolute;
+	left: 25vw;
+	top: 0;
+	width: 75vw;
+	height: 100vh;
+	/*z-index: -1;*/
+	background-color: grey;
+}
+#mapid {
+	width: 75vw; 
+	height: 100vh;
+}
+div.input-form {
+	overflow-y: auto;
+	width: 25vw;
+	height:100vh;
+	box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2), 0 0 20px 0 rgba(0, 0, 0, 0.19);
+}
+div.input-form-inner {
+	padding: 10px;
+
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type=number] {
+    -moz-appearance:textfield; /* Firefox */
+}

@@ -1,0 +1,494 @@
+<html>
+<head>
+  <title>HTML5</title>
+	<meta charset="utf-8" />
+	<script src="lib/jquery.min.js"></script>
+	<link rel="stylesheet" href="lib/leaflet.css" />
+	<script src="lib/leaflet.js"></script>
+	<script src="lib/d3.v5.min.js"></script>
+	<script src="lib/d3-tip.min.js"></script>
+	<script src="lib/d3-scale-chromatic.v1.min.js"></script>
+	<script src="lib/topojson.v2.min.js"></script>
+
+  
+  <style>
+	html, body {
+		height: 100%;
+		margin: 0;
+	}
+
+	#map{
+		width: 100%;
+		height:100%;
+	}
+  
+	.d3-tip {
+	  line-height: 1;
+	  font: 15px sans-serif;
+	  padding: 5px;
+	  background: rgba(229,245,224, 0.9);
+	  color: #000;
+	  border-radius: 10px;
+	}
+	
+	.zip {
+		fill-opacity: 0.3;
+      	stroke: #003399;
+      	stroke-width: 1.5px
+    }
+	
+	.coord {
+	  fill: SteelBlue;
+	  r:3px
+	}
+	
+	.coord-highlight {
+	  fill: LightGreen;
+	  stroke: #000;
+	  stroke-width: 1px;
+	  r:10px
+	}
+	
+	.coord-zoom {
+	  fill: Yellow;
+	  stroke: #000;
+	  stroke-width: 1px;
+	  r:10px
+	}
+	
+	.hide-coord {
+	  r:0px
+	}
+	
+	.coord-hover {
+	  fill: Green;
+	  stroke: #003399;
+	  stroke-width: 1.5px;
+	  r:10px
+	}
+  
+</style>
+<div id="map"></div>
+<script>
+ 
+ 
+var flag = true;
+var flag2 = true;
+var flag3 = true;
+var attr_markers = [];
+var cScale = d3.scaleThreshold()
+			.domain(d3.range(100,1000,100))
+			.range(d3.schemeOrRd[9])
+			
+
+//define the tiles that is based on OpenStreetMap
+var osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+});
+
+//define the leaflet map
+var map = L.map('map')
+	.addLayer(osmTiles)
+	.setView(new L.LatLng(37.76074, -122.43952),13);
+
+//disabling the default double click to zoom
+map.doubleClickZoom.disable(); 
+
+//define the SVG that based on the leaflet map
+var svg = d3.select(map.getPanes().overlayPane).append("svg");
+var g = svg.append("g").attr("class", "leaflet-zoom-hide");
+
+
+//define the promise functions
+var promises = [d3.json("lib/combine-geo.json"),				//the GeoJSON map of San Francisco
+				d3.csv("lib/SanFran_data.csv"),					//the AirBnB datasets
+				d3.tsv("lib/SF_host_attr_simp.tsv"),			//the datasets for the nearby attractions for each AirBnB listing
+				d3.tsv("lib/attractions.tsv"),					//the details for each of the attractions
+				d3.tsv("lib/icons.tsv") ]						//the unique icons for each attractions used as leaflet markers
+				
+Promise.all(promises).then(ready)
+
+
+function ready([sf, data, host_attr, attr, icon]) {
+     
+	//define the tooltip for the ZCTA segment
+	var tip1 = d3.tip()
+		.attr('class', 'd3-tip')
+		.offset([-10, 10])
+		.html(function(d, i) { return "Zipcode: " + d.properties.zipcode +
+			"<br />Frequency: " + d.properties.freq});
+
+	//define the tooltip for the AirBnB listing
+	var tip2 = d3.tip()
+		.attr('class', 'd3-tip')
+		.offset([-10, 10])
+		.html(function(d) {return '<center><img src="'+ data.filter(function (D) {return D.id==d.properties.id})[0]["picture_url"] 
+			+'" alt="src1" style="width:500px;height:300px;"><br>'
+			+ "<br><a href=" + data.filter(function (D) {return + D.id==d.properties.id})[0]["listing_url"] + '" target="_blank"><b>AirBnB Link</b></a><br>'
+			+ "<br><b>Listing Name</b> : " + data.filter(function (D) {return + D.id==d.properties.id})[0]["name"]
+			+ "<br><b>Location</b> : <a href=https://www.google.com/maps/dir/?api=1&destination="  + 
+					d.geometry.coordinates[1] + "," + d.geometry.coordinates[0] + " target=_blank>" + 
+					d.geometry.coordinates[1].toFixed(4) + "," + d.geometry.coordinates[0].toFixed(4) + "</a>" 
+			+ "<br><b>Neighborhood</b>: " + data.filter(function (D) {return D.id==d.properties.id})[0]["neighbourhood"] 
+			+ "<br><b>Property Type</b>: " + data.filter(function (D) {return D.id==d.properties.id})[0]["property_type"] 
+			+ "<br><b>Room Type</b>: " + data.filter(function (D) {return D.id==d.properties.id})[0]["room_type"] 
+			+ "<br><b>Accomodates</b>: " + data.filter(function (D) {return D.id==d.properties.id})[0]["accommodates"] 
+			+ "<br><b>Bedrooms</b>: " + data.filter(function (D) {return D.id==d.properties.id})[0]["bedrooms"] 
+			+ "<br><b>Bathrooms</b>: " + data.filter(function (D) {return D.id==d.properties.id})[0]["bathrooms"] 
+			+ "<br><b>Number of beds</b>: " + data.filter(function (D) {return D.id==d.properties.id})[0]["beds"] 
+			+ "<br><b>Price</b>: " + data.filter(function (D) {return D.id==d.properties.id})[0]["price"] 
+			+"</center>"});
+	
+	g.call(tip1);
+	g.call(tip2);
+	
+	//define the the map Projection from GeoJSON to TopoJSON
+	var transform = d3.geoTransform({point: projectPoint});
+	var path = d3.geoPath().projection(transform).pointRadius(3);
+
+
+	active = d3.select(null);
+	// define the zooming in function
+	function mapClick(d) {
+		if (active.node() === this) return reset_zoom();
+		active.classed("active", false);
+		active = d3.select(this).classed("active", true);
+		flag = false;
+		tip2.hide()
+
+		svg.selectAll("text").remove()
+		svg.selectAll(".legend").remove()
+		d3.select(".leaflet-marker-pane").selectAll("img").remove()
+		svg.selectAll("path").attr("fill-opacity",0.7).attr("stroke-width", "2px")
+		
+		d3.select(this).attr("fill-opacity",0)
+		var zip = d.id
+
+		svg.selectAll("circle")
+		.attr("class", function(d) {if (d.properties.zipcode == zip){return "coord-zoom"}
+			else {return "hide-coord"};})
+		flag2 = true
+	}
+	
+	// define the zooming out function
+	function reset_zoom() {
+		flag = true;
+		flag2 = true;
+		active.classed("active", false);
+		active = d3.select(null);
+		svg.selectAll("circle")
+				.attr("class","coord")
+		svg.selectAll("path").attr("fill-opacity",0.9)
+		tip2.hide()
+		map.setView(new L.LatLng(37.76074, -122.43952),13);
+		reset()
+		flag2 = true
+	}
+
+	//define the event function when a mouse hover on the datapoints
+	function pointHover(d) {
+
+		tip2.show(d)
+		if (flag2) {
+			d3.select(".leaflet-marker-pane").selectAll("img").remove()
+			d3.select(this).attr("class","coord-highlight")
+
+
+			var host_ele = JSON.parse(host_attr.find(function(element){ if (element.host_id == d.properties.id) {return element}}).attractions)
+			var attr_ele = []
+			var popup = []
+
+			for (var i = 0; i < host_ele.length; i++) {
+
+				attr_ele[i] = attr.find(function(element){ if (element.id == host_ele[i][0]) {return element}})
+				var icon_url = icon.find(function(element){if (element.cat == attr_ele[i].cat) {return element}}).url
+
+
+				popup[i] = L.popup({maxWidth:500,offset:[0,0]})
+					.setContent('<center><b>' +
+					attr_ele[i]["name"] + '</b><br>' + 
+					attr_ele[i]["cat"] + '<br>Distance from selected host : ' + 
+					host_ele[i][1] + 'm<br>Location : <a href="https://www.google.com/maps/dir/' + 
+					JSON.parse(attr_ele[i].coordinates)[1] + "," + JSON.parse(attr_ele[i].coordinates)[0] + "/" + 
+					d.geometry.coordinates[1] + "," + d.geometry.coordinates[0] + '" target="_blank">' + 
+					JSON.parse(attr_ele[i].coordinates)[1] + "," + JSON.parse(attr_ele[i].coordinates)[0] + '</a><br>Opening Hours<br>' + 
+					attr_ele[i]["hours"] + '</center>');
+
+				attr_markers[i] = L.marker([JSON.parse(attr_ele[i].coordinates)[1],JSON.parse(attr_ele[i].coordinates)[0]],{
+						icon: L.icon({
+							iconUrl:icon_url,
+							iconSize: [32, 37],
+							iconAnchor: [16, 37],
+							popupAnchor: [-2, -45]})
+						,riseOnHover:'false',opacity:0.7}).addTo(map);
+		
+				attr_markers[i].bindPopup(popup[i]);
+				attr_markers[i].on('click', function() {
+					this.openPopup();
+					tip2.hide();
+					if (flag3)
+						flag3 = false;
+					else
+						flag3 = true;
+				});
+				attr_markers[i].on('mouseover', function() { 
+					this.openPopup();
+					tip2.hide(); });
+				attr_markers[i].on('mouseout', function() {
+					if (flag3)
+						this.closePopup(); 
+				});
+			}
+		}
+	}
+
+	
+	
+	//define the event function when the datapoint is clicked
+	function pointClick(d) {
+	
+		tip2.show(d)
+		
+		if (flag2) {
+			flag2 = false; 
+					 d3.select(".leaflet-marker-pane").selectAll("img").remove()
+
+			svg.selectAll("circle").attr("class","hide-coord")
+			svg.selectAll("path").attr("fill-opacity","0.2")
+			d3.select(this).attr("class","coord-highlight")
+	
+
+
+			var host_ele = JSON.parse(host_attr.find(function(element){ if (element.host_id == d.properties.id) {return element}}).attractions)
+			var attr_ele = []
+			var popup = []
+
+			//define the unique markers for each attraction
+			for (var i = 0; i < host_ele.length; i++) {
+
+				attr_ele[i] = attr.find(function(element){ if (element.id == host_ele[i][0]) {return element}})
+				var icon_url = icon.find(function(element){if (element.cat == attr_ele[i].cat) {return element}}).url
+
+
+				popup[i] = L.popup({maxWidth:500,offset:[0,0]})
+					.setContent('<center><b>' +
+					attr_ele[i]["name"] + '</b><br>' + 
+					attr_ele[i]["cat"] + '<br>Distance from selected host : ' + 
+					host_ele[i][1] + 'm<br>Location : <a href="https://www.google.com/maps/dir/' + 
+					JSON.parse(attr_ele[i].coordinates)[1] + "," + JSON.parse(attr_ele[i].coordinates)[0] + "/" + 
+					d.geometry.coordinates[1] + "," + d.geometry.coordinates[0] + '" target="_blank">' + 
+					JSON.parse(attr_ele[i].coordinates)[1] + "," + JSON.parse(attr_ele[i].coordinates)[0] + '</a><br>Opening Hours<br>' + 
+					attr_ele[i]["hours"] + '</center>');
+
+				attr_markers[i] = L.marker([JSON.parse(attr_ele[i].coordinates)[1],JSON.parse(attr_ele[i].coordinates)[0]],{
+						icon: L.icon({
+							iconUrl:icon_url,
+							iconSize: [32, 37],
+							iconAnchor: [16, 37],
+							popupAnchor: [-2, -45]})
+						,riseOnHover:'false',opacity:0.7}).addTo(map);
+		
+				attr_markers[i].bindPopup(popup[i]);
+				attr_markers[i].on('click', function() {
+					this.openPopup();
+					tip2.hide()
+					if (flag3)
+						flag3 = false;
+					else
+						flag3 = true;
+				});
+				attr_markers[i].on('mouseover', function() { 
+					this.openPopup();
+					tip2.hide(); });
+				attr_markers[i].on('mouseout', function() {
+					if (flag3)
+						this.closePopup(); 
+				});
+			}
+		} 
+		
+		else {
+		console.log("RESET")
+			flag = true
+			flag2 = true
+			reset()
+		}
+	}
+
+	//define the svg map of San Francisco that is based on the ZCTA boundary
+	var feature = g.append("g").selectAll("path")
+		.data(topojson.feature(sf, sf.objects.zcta).features)
+		.enter().append("path")
+		.attr("fill", function(d) {return cScale(d.properties.freq)})
+		.attr("fill-opacity", "0.9")
+		.attr("stroke", "#003399")
+		.attr("stroke-width", "1.5px")
+		.on("dblclick", mapClick)
+		.on('mouseover', function(d) {if (flag2) { if (flag) {
+			d3.select(this).attr("fill-opacity","0"); tip1.show(d)}}
+			})
+		.on('mouseout', function(d) {if (flag2) {if (flag) {if (map.getZoom()<=15){d3.select(this).attr("fill-opacity","0.9")}}}; tip1.hide(d);})
+
+	//define the data points based on the listing data
+	var points = g.append("g")
+		.selectAll("circle")
+		.data(topojson.feature(sf, sf.objects[Object.keys(sf.objects)[1]]).features)
+		.enter().append("circle")
+		.attr("class", function(d) {if (flag) {return "coord"} else {return "coord-zoom"}})
+		.on("click", pointClick)
+		.on('mouseover', pointHover)
+		.on('mouseout', function(d,i) {if (flag2) {if (map.getZoom() > 15) {d3.select(this).attr("class","coord-zoom")}
+										else if(map.getZoom() <= 15 && flag == true) {d3.select(this).attr("class","coord")}
+										else {d3.select(this).attr("class","coord-zoom")};
+											 tip2.hide(d,i)}})
+
+
+	// hide tooltip when mouse is click anywhere on the map
+	map.on("click", function(e) {
+		tip2.hide()
+	})
+
+	// zoom to mouse position on double click
+	map.on("dblclick", function(e) {
+		map.setView(new L.LatLng(e.latlng.lat,e.latlng.lng),14);
+	})
+
+	// map will reset when zooming in or out
+	map.on("viewreset", reset);
+	reset();
+
+
+	//define the function that will resize the SVG based on the leaflet map zoom level
+	function reset() {
+		tip2.hide()
+		
+		//the bound of the svg is based on the Topojson boundary of the San Francisco map
+		var bounds = path.bounds(topojson.feature(sf, sf.objects.zcta)),
+		topLeft = bounds[0],
+		bottomRight = bounds[1];
+		var padding = 500
+		
+		svg.attr("width", bottomRight[0] - topLeft[0] + padding + "px")
+		.attr("height", bottomRight[1] - topLeft[1] + padding + "px")
+		.style("left", topLeft[0] + "px")
+		.style("top", topLeft[1] + "px");
+
+		g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+
+
+		feature.attr("d", path);
+		points.attr("transform",
+				function(d) {
+					return "translate(" +
+						applyLatLngToLayer(d).x + "," +
+						applyLatLngToLayer(d).y + ")";});
+
+		  
+		if (map.getZoom() > 15 && flag == true && flag2 == true) {
+			svg.selectAll("circle").attr("class","coord-zoom")
+			svg.selectAll("path").attr("fill-opacity",0.1).attr("stroke-width", "3px")
+			console.log(flag)
+		}
+
+		else if (map.getZoom() <= 15 && flag == true && flag2 == true) {
+			svg.selectAll("circle").attr("class","coord")
+			svg.selectAll("path").attr("fill-opacity",0.9).attr("stroke-width", "1.5px")
+		}
+	
+		if (map.getZoom() == 13)
+			legend()
+		else {
+			svg.selectAll("text").remove()
+			svg.selectAll(".legend").remove()
+		}
+		
+            
+        //define the legend and description            
+        function legend() {
+	
+			// define the yScale for the legend
+			yScale = d3.scaleLinear()
+				.domain(cScale.domain())
+				.range([0,30]);	
+	
+			// define the legend title
+			g.append("text")
+				.attr("transform", "translate(" + (topLeft[0] + 850) + ","+ (topLeft[1]+120) + ")")
+				.attr("fill", "#000")
+				.attr("text-anchor", "middle")
+				.attr("font-weight", "bold")
+				.attr("font-family", "sans-serif")
+				.attr("font-size",20)
+				.text("Frequency");
+				
+			// define the description box	
+			g.append("rect")
+				.attr("class","legend")
+				.attr("width", 400)
+				.attr("height", 500)
+				.attr("transform", "translate(" + (topLeft[0] + 910) + ","+ (topLeft[1]+80) + ")")
+				.attr("fill", "#ffffcc")
+				.attr("fill-opacity", 0.7)
+			
+			//define the description text				
+			g.append("foreignObject")
+				.attr("class","legend")
+				.attr("width", 380)
+				.attr("height", 500)
+				.attr("transform", "translate(" + (topLeft[0] + 920) + ","+ (topLeft[1]+100) + ")")
+				.append("xhtml:body")
+				.style("font", "12px 'Helvetica Neue'")
+				.html("<h1><center>Visualisation of AirBnB in San Francisco</center></h1><p> The map shows the distribution of AirBnB host in San Francisco city. This web based app will make it easier for AirBnB user to find any listings quickly and shows the necessary details and the nearby attractions to each listing" +
+				"<br><br>The city is divided by its zipcode tabulation area (ZCTA was obtained from <a href=https://www.census.gov/developers/ target=_blank>Census Bureau</a>) and each ZCTA was coloured based on its frequency." + 
+				"<br><br> Each point correspond to an AirBnB listing. There's a total of 7151 AirBnB listing at the time of this visualisation was made. Data was pulled from <a href = http://insideairbnb.com/get-the-data.html target=_blank>AirBnB website</a>." +
+				"<br><br>Double click the ZCTA segment to show only the listings in that zipcode area, double click again to reset view" +
+				"<br><br>When hovering over the listing, the details of the listing will be shown on a tooltip along with the 100 closest attractions that is based on <a href = https://developer.here.com/documentation/maps/topics/discovering-places.html target=_blank>HERE Map</a> is shown." +
+				"<br><br>Clicking on a listing will show only that listing and will hide everything else. Hovering over the attraction markers will also bring up some details regarding each location. Clicking the listing again will reset the points." +
+				"<br><br>Each listing also provides direct link to it's corresponding AirBnB site. Clicking on the 'AirBnB Link' will open a new window that goes to the listing url.");
+
+			// define the legend
+			var legend = g.selectAll(".legend")
+				.data(cScale.domain(), function(d) { return d; })
+				.enter()
+				.append("g")
+				.attr("class", "legend")
+				.attr("transform", function(d, i) { 
+					return "translate(" + (topLeft[0] + 830) + "," + (topLeft[1]+140 + i * 30) + ")"; });
+
+			// create the color bar
+			legend.append("rect")
+				.attr("width", 20)
+				.attr("height", 30)
+				.style("fill", function(d,i) {return cScale.range()[i];});
+				
+
+			// 	create the number right next to the bar
+			g.append("g")
+				.attr("class", "legend")
+				.attr("transform", "translate(" + (topLeft[0] + 830) + "," + (topLeft[1]+140 +30) + ")")
+				.call(d3.axisRight(yScale)
+				.tickSize(30)
+				.tickFormat(function(d, i) {if (i==0) {return "\u2264 " + Math.ceil(d);} 
+					else if (i==7){return "\u2265 " + Math.ceil(d) } 
+					else {return "\u00A0\t" + Math.ceil(d);}})
+				.tickValues(d3.range(100,900,100)))
+				.select(".domain")
+				.remove();
+		}	
+	}
+         
+	function projectPoint(x, y) {
+		var point = map.latLngToLayerPoint(new L.LatLng(y, x));
+		this.stream.point(point.x, point.y);
+	}
+}
+    
+function applyLatLngToLayer(d) {
+	var y = d.geometry.coordinates[1]
+	var x = d.geometry.coordinates[0]
+	return map.latLngToLayerPoint(new L.LatLng(y, x))
+}
+</script>
+
+</head>
+</html>
