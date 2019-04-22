@@ -349,11 +349,11 @@ function ready([sf, data, host_attr, attr, icon]) {
 			.range(d3.schemeYlGn[9])
 		}
 		else if (counter == 2) {
-			var max = Math.ceil(d3.max(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_review); })/4)*4
-			var min = Math.floor(d3.min(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_review); }))*0
+			var max = Math.ceil(d3.max(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_review); }))+1
+			var min = Math.ceil(d3.min(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_review); }))
 			var cScale = d3.scaleThreshold()
-			.domain(d3.range(min,max,(max-min)/9))
-			.range(d3.schemeYlOrRd[9])
+			.domain(d3.range(min,max,(max-min)/4))
+			.range(d3.schemeYlOrRd[4])
 		}
 
 		//the bound of the svg is based on the Topojson boundary of the San Francisco map
