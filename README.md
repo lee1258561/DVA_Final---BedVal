@@ -19,15 +19,15 @@ python server.py
 
 ## User Visualization
 ### Setup and Run
-The code resource for user visualization is under user_visualization/ directory. Do not change the files in the "lib" folder. The program can be opened immediately if Mozilla browser is used. For Chrome and Safari, local server has to be setup to your local directory to run the index.html file. To setup the local server, follow the above steps for the Host Interface but in your user_visualization directory
+The code resource for user visualization is under user_visualization/ directory. Do not change the files in the "lib" folder. To run on Chrome or Safari, local server has to be setup to your local directory to run the index.html file. To setup the local server, follow the above steps for the Host Interface but in your user_visualization directory. It is possible, however not recommended to run on Firefox (it was not properly tested) and it does not require a local server setup.
 
 ### Note
 This web-based program was developed locally and has been tested to work with Chrome and Safari browsers (latest version),
-as long as the the program is run on a local server. It can also run on Mozilla browser without the need of local server.
+as long as the the program is run on a local server. Thus, Chrome and Safari are greatly recommended to run this program rather than with Firefox.
 
 ### Github.io repo
 The following Github.io repo is a self contain server that can open our web-based program without the need of creating a local server.
-It has been tested to work with Chrome, Safari and Mozilla browser.
+It has been tested to work well with Chrome and Safari.
 
 [Github.io link](https://asaj3.github.io/)
 
