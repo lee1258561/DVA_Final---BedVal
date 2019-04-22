@@ -25,11 +25,11 @@ The code resource for user visualization is under user_visualization/ directory.
 This web-based program was developed locally and has been tested to work with Chrome and Safari browsers (latest version),
 as long as the the program is run on a local server. It can also run on Mozilla browser without the need of local server.
 
-### Github repo
-The following Github repo is a self contain server that can open our web-based program without the need of creating a local server.
+### Github.io repo
+The following Github.io repo is a self contain server that can open our web-based program without the need of creating a local server.
 It has been tested to work with Chrome, Safari and Mozilla browser.
 
-[Github link](https://asaj3.github.io/)
+[Github.io link](https://asaj3.github.io/)
 
 
 
