@@ -70,10 +70,10 @@
 var flag = true;
 var flag2 = true;
 var flag3 = true;
+var flag4 = true;
+var counter = 0;
 var attr_markers = [];
-var cScale = d3.scaleThreshold()
-			.domain(d3.range(100,1000,100))
-			.range(d3.schemeOrRd[9])
+
 			
 
 //define the tiles that is based on OpenStreetMap
@@ -105,13 +105,16 @@ Promise.all(promises).then(ready)
 
 
 function ready([sf, data, host_attr, attr, icon]) {
-     
+				
+				
 	//define the tooltip for the ZCTA segment
 	var tip1 = d3.tip()
 		.attr('class', 'd3-tip')
 		.offset([-10, 10])
 		.html(function(d, i) { return "Zipcode: " + d.properties.zipcode +
-			"<br />Frequency: " + d.properties.freq});
+			"<br>Frequency: " + d.properties.freq +
+			"<br>Average Price: $" + d.properties.avg_price.toFixed(2) +
+			"<br>Average Review: " + d.properties.avg_review.toFixed(2)});
 
 	//define the tooltip for the AirBnB listing
 	var tip2 = d3.tip()
@@ -273,7 +276,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 	var feature = g.append("g").selectAll("path")
 		.data(topojson.feature(sf, sf.objects.zcta).features)
 		.enter().append("path")
-		.attr("fill", function(d) {return cScale(d.properties.freq)})
+		// .attr("fill", function(d) {return cScale(d.properties.freq)})
 		.attr("fill-opacity", "0.9")
 		.attr("stroke", "#003399")
 		.attr("stroke-width", "1.5px")
@@ -305,7 +308,8 @@ function ready([sf, data, host_attr, attr, icon]) {
 
 	// zoom to mouse position on double click
 	map.on("dblclick", function(e) {
-		map.setView(new L.LatLng(e.latlng.lat,e.latlng.lng),14);
+		if (flag==false)
+			map.setView(new L.LatLng(e.latlng.lat,e.latlng.lng),14);
 	})
 
 	// map will reset when zooming in or out
@@ -315,7 +319,42 @@ function ready([sf, data, host_attr, attr, icon]) {
 
 	//define the function that will resize the SVG based on the leaflet map zoom level
 	function reset() {
+	
 		tip2.hide()
+		// define the color scale	
+		var cScale = d3.scaleThreshold()
+		
+		// define the function that will update the color scale based on the properties selected
+		function prop(ctr) {
+			if (ctr == 0) 
+				counter = 1
+			else if (ctr == 1)
+				counter = 2
+			else if (ctr == 2)
+				counter = 0
+			reset()
+		}
+		if (counter == 0) {
+			var max = Math.ceil(d3.max(sf.objects.zcta.geometries, function(d) { return (d.properties.freq); })/100)*100
+			var min = Math.ceil(d3.min(sf.objects.zcta.geometries, function(d) { return (d.properties.freq); })/100)*100
+			var cScale = d3.scaleThreshold()
+			.domain(d3.range(min,max,(max-min)/9))
+			.range(d3.schemeOrRd[9])
+		}
+		else if (counter == 1) {
+			var max = Math.ceil(d3.max(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_price); }))
+			var min = Math.ceil(d3.min(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_price); }))
+			var cScale = d3.scaleThreshold()
+			.domain(d3.range(min,max,(max-min)/9))
+			.range(d3.schemeYlGn[9])
+		}
+		else if (counter == 2) {
+			var max = Math.ceil(d3.max(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_review); })/4)*4
+			var min = Math.floor(d3.min(sf.objects.zcta.geometries, function(d) { return (d.properties.avg_review); }))*0
+			var cScale = d3.scaleThreshold()
+			.domain(d3.range(min,max,(max-min)/9))
+			.range(d3.schemeYlOrBr[9])
+		}
 
 		//the bound of the svg is based on the Topojson boundary of the San Francisco map
 		var bounds = path.bounds(topojson.feature(sf, sf.objects.zcta)),
@@ -323,15 +362,18 @@ function ready([sf, data, host_attr, attr, icon]) {
 		bottomRight = bounds[1];
 		var padding = 500
 		
+		//define the svg size base on the current zoom level of the leaflet map
 		svg.attr("width", bottomRight[0] - topLeft[0] + padding + "px")
 		.attr("height", bottomRight[1] - topLeft[1] + padding + "px")
 		.style("left", topLeft[0] + "px")
 		.style("top", topLeft[1] + "px");
 
 		g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
-
-
-		feature.attr("d", path);
+		
+		// define the color of the ZCTA polygon based on selected properties
+		feature.attr("d", path).transition().duration(500).attr("fill", function(d) {if (counter == 0) {return cScale(d.properties.freq)} 
+														else if (counter == 1) {return cScale(d.properties.avg_price)}
+														else {return cScale(d.properties.avg_review)}});
 		points.attr("transform",
 				function(d) {
 					return "translate(" +
@@ -355,32 +397,63 @@ function ready([sf, data, host_attr, attr, icon]) {
 			svg.selectAll("text").remove()
 			svg.selectAll(".legend").remove()
 		}
-		
             
         //define the legend and description            
         function legend() {
 	
+			svg.selectAll("text").remove()
+			svg.selectAll(".legend").remove()
+			
 			// define the yScale for the legend
 			yScale = d3.scaleLinear()
 				.domain(cScale.domain())
 				.range([0,30]);	
-	
+			
+			// define the legend title box	
+			g.append("rect")
+				.attr("class","legend")
+				.attr("width", 130)
+				.attr("height", 40)
+				.attr("transform", "translate(" + (topLeft[0] + 780) + ","+ (topLeft[1]+95) + ")")
+				.attr("fill-opacity", 0.7)
+				.on("click",function() {prop(counter)})
+				.transition().duration(500)
+				.attr("fill", function() {return (cScale.range()[1])});
+			
 			// define the legend title
-			g.append("text")
-				.attr("transform", "translate(" + (topLeft[0] + 850) + ","+ (topLeft[1]+120) + ")")
-				.attr("fill", "#000")
-				.attr("text-anchor", "middle")
-				.attr("font-weight", "bold")
-				.attr("font-family", "sans-serif")
-				.attr("font-size",20)
-				.text("Frequency");
-				
+			if (flag4) {
+				g.append("text")
+					.attr("transform", "translate(" + (topLeft[0] + 845) + ","+ (topLeft[1]+120) + ")")
+					.attr("fill", "#000")
+					.attr("text-anchor", "middle")
+					.attr("font-weight", "bold")
+					.attr("font-family", "sans-serif")
+					.attr("font-size",20)
+					.text("CLICK HERE")
+					.on("click",function() {prop(counter)});
+				flag4 = false;
+			}
+			
+			else {
+				g.append("text")
+					.attr("transform", "translate(" + (topLeft[0] + 845) + ","+ (topLeft[1]+120) + ")")
+					.attr("fill", "#000")
+					.attr("text-anchor", "middle")
+					.attr("font-weight", "bold")
+					.attr("font-family", "sans-serif")
+					.attr("font-size",20)
+					.text(function(d) {if (counter == 0) {return "Frequency"} 
+						else if (counter == 1) {return "Avg Price"} 
+						else {return "Avg Review"}})
+					.on("click",function() {prop(counter)});
+			}
+					
 			// define the description box	
 			g.append("rect")
 				.attr("class","legend")
 				.attr("width", 400)
 				.attr("height", 520)
-				.attr("transform", "translate(" + (topLeft[0] + 910) + ","+ (topLeft[1]+80) + ")")
+				.attr("transform", "translate(" + (topLeft[0] + 920) + ","+ (topLeft[1]+80) + ")")
 				.attr("fill", "#ffffcc")
 				.attr("fill-opacity", 0.7)
 			
@@ -389,13 +462,13 @@ function ready([sf, data, host_attr, attr, icon]) {
 				.attr("class","legend")
 				.attr("width", 380)
 				.attr("height", 500)
-				.attr("transform", "translate(" + (topLeft[0] + 920) + ","+ (topLeft[1]+100) + ")")
+				.attr("transform", "translate(" + (topLeft[0] + 930) + ","+ (topLeft[1]+100) + ")")
 				.append("xhtml:body")
 				.style("font", "12px 'Helvetica Neue'")
 				.html("<h1><center>Visualisation of AirBnB in San Francisco</center></h1><p>The map shows the distribution of AirBnB host in San Francisco city. This web based app will make it easier for AirBnB user to find any listings quickly and shows the necessary details and the nearby attractions to each listing" +
 				"<br><br>The city is divided by its zipcode tabulation area (ZCTA was obtained from <a href=https://www.census.gov/developers/ target=_blank>Census Bureau</a>) and each ZCTA was coloured based on its frequency." + 
 				"<br><br> Each point correspond to an AirBnB listing. There's a total of 7151 AirBnB listing at the time of this visualisation was made. Data was pulled from <a href = http://insideairbnb.com/get-the-data.html target=_blank>AirBnB website</a>." +
-				"<br><br>Double click the ZCTA segment to show only the listings in that zipcode area, double click again to reset view" +
+				"<br><br>Click the legend title to change the visualisation property. Double click the ZCTA segment to show only the listings in that zipcode area, double click again to reset view" +
 				"<br><br>When hovering over the listing, the details of the listing will be shown on a tooltip along with the 100 closest attractions that is based on <a href = https://developer.here.com/documentation/maps/topics/discovering-places.html target=_blank>HERE Map</a> is shown." +
 				"<br><br>Clicking on a listing will show only that listing and will hide everything else. Hovering over the attraction markers will also bring up some details regarding each location. Clicking the listing again will reset the points." +
 				"<br><br>Each listing also provides direct link to it's corresponding AirBnB site. Clicking on the 'AirBnB Link' will open a new window that goes to the listing url.");
@@ -415,7 +488,9 @@ function ready([sf, data, host_attr, attr, icon]) {
 				.attr("height", 30)
 				.style("fill", function(d,i) {return cScale.range()[i];});
 				
-
+			var tickRange = cScale.domain()
+			tickRange.pop()
+			
 			// 	create the number right next to the bar
 			g.append("g")
 				.attr("class", "legend")
@@ -425,9 +500,11 @@ function ready([sf, data, host_attr, attr, icon]) {
 				.tickFormat(function(d, i) {if (i==0) {return "\u2264 " + Math.ceil(d);} 
 					else if (i==7){return "\u2265 " + Math.ceil(d) } 
 					else {return "\u00A0\t" + Math.ceil(d);}})
-				.tickValues(d3.range(100,900,100)))
+				.tickValues(tickRange))
 				.select(".domain")
 				.remove();
+				
+
 		}	
 	}
          
