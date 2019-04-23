@@ -326,6 +326,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 		
 		// define the function that will update the color scale based on the properties selected
 		function prop(ctr) {
+			flag4 = false;
 			if (ctr == 0) 
 				counter = 1
 			else if (ctr == 1)
@@ -431,7 +432,6 @@ function ready([sf, data, host_attr, attr, icon]) {
 					.attr("font-size",20)
 					.text("CLICK HERE")
 					.on("click",function() {prop(counter)});
-				flag4 = false;
 			}
 			
 			else {
