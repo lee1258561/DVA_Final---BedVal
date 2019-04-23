@@ -1,6 +1,7 @@
 # DVA_Final---BedVal
 ## Host Interface
 ### Setup
+For host Interface, please run the python command using python 2.7.
 1. Download data from https://drive.google.com/file/d/1deODOOpRnlfjZkFAGrQaUMTOR8RSf7cO/view?usp=sharing to host_interface/, unzip and make sure there is a directory data/ under host_interface/ directory.
 2. 
 ```

@@ -14,6 +14,7 @@
 
 2. Installation:
 	Host Interface Module:
+		For host module, please run the python command using python 2.7.
 		Download data from https://drive.google.com/file/d/1deODOOpRnlfjZkFAGrQaUMTOR8RSf7cO/view?usp=sharing to host_interface/, unzip and make sure there is a directory data/ under host_interface/ directory.
 		cd host_interface/
 		pip install -r requirements.txt
