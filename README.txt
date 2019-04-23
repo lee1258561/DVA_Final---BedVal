@@ -35,7 +35,7 @@
 			http://localhost:8080/index.html
 
 	User Visualization Module:
-		1. Open the [Github.io](asaj3.github.io) link using Chrome or Safari browser.
+		1. Open the [Github.io](https://asaj3.github.io/) link using Chrome or Safari browser.
 		2. To run locally, after setting up your local server, open the url http://localhost:8080/index.html using Chrome or 				Safari browser.
 		
 		
