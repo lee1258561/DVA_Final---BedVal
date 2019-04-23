@@ -284,7 +284,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 		.on('mouseover', function(d) {if (flag2) { if (flag) {
 			d3.select(this).attr("fill-opacity","0"); tip1.show(d)}}
 			})
-		.on('mouseout', function(d) {if (flag2) {if (flag) {if (map.getZoom()<=15){d3.select(this).attr("fill-opacity","0.9")}}}; tip1.hide(d);})
+		.on('mouseout', function(d) {if (flag2) {if (flag) {if (map.getZoom()<=14){d3.select(this).attr("fill-opacity","0.9")}}}; tip1.hide(d);})
 
 	//define the data points based on the listing data
 	var points = g.append("g")
@@ -295,8 +295,8 @@ function ready([sf, data, host_attr, attr, icon]) {
 		.attr("class", function(d) {if (flag) {return "coord"} else {return "coord-zoom"}})
 		.on("click", pointClick)
 		.on('mouseover', pointHover)
-		.on('mouseout', function(d,i) {if (flag2) {if (map.getZoom() > 15) {d3.select(this).attr("class","coord-zoom").attr("r","10px")}
-										else if(map.getZoom() <= 15 && flag == true) {d3.select(this).attr("class","coord").attr("r","3px")}
+		.on('mouseout', function(d,i) {if (flag2) {if (map.getZoom() > 14) {d3.select(this).attr("class","coord-zoom").attr("r","10px")}
+										else if(map.getZoom() <= 14 && flag == true) {d3.select(this).attr("class","coord").attr("r","3px")}
 										else {d3.select(this).attr("class","coord-zoom").attr("r","10px")};
 											 tip2.hide(d,i)}})
 
@@ -386,7 +386,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 			svg.selectAll("path").attr("fill-opacity",0.1).attr("stroke-width", "3px")
 		}
 
-		else if (map.getZoom() <= 15 && flag == true && flag2 == true) {
+		else if (map.getZoom() <= 14 && flag == true && flag2 == true) {
 			svg.selectAll("circle").attr("class","coord").attr("r","3px")
 			svg.selectAll("path").attr("fill-opacity",0.9).attr("stroke-width", "1.5px")
 		}
