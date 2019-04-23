@@ -19,8 +19,9 @@
 		pip install -r requirements.txt
 
 	User Visualization Module:
+		1. Github.io has been setup to run the web-based program for the user without them having to do anything else.
+		2. If prefer to run locally, run a local server to the user_visualization directory. Using [http.server]					(https://www.npmjs.com/package/http-server) is one way to setup local server in your computer.
 		
-
 	Supervised Learning & Experiments:
 		Make sure the combined1.csv dataset is under the same folder with the scripts.
 		cd supervised_learning_experiments/
@@ -34,6 +35,10 @@
 			http://localhost:8080/index.html
 
 	User Visualization Module:
+		1. Open the [Github.io](asaj3.github.io) link using Chrome or Safari browser.
+		2. To run locally, after setting up your local server, open the url http://localhost:8080/index.html using Chrome or 				Safari browser.
+		
+		
 		
 
 	Supervised Learning & Experiments:
