@@ -466,7 +466,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 				.append("xhtml:body")
 				.style("font", "12px 'Helvetica Neue'")
 				.html("<h1><center>Visualisation of AirBnB in San Francisco</center></h1><p>The map shows the distribution of AirBnB host in San Francisco city. This web based app will make it easier for AirBnB user to find any listings quickly and shows the necessary details and the nearby attractions to each listing" +
-				"<br><br>The city is divided by its zipcode tabulation area (ZCTA was obtained from <a href=https://www.census.gov/developers/ target=_blank>Census Bureau</a>) and each ZCTA was coloured based on its frequency." + 
+				"<br><br>The city is divided by its zipcode tabulation area (ZCTA was obtained from <a href=https://www.census.gov/developers/ target=_blank>Census Bureau</a>) and each ZCTA was coloured based on either its frequency, average price or average review." + 
 				"<br><br> Each point correspond to an AirBnB listing. There's a total of 7151 AirBnB listing at the time of this visualisation was made. Data was pulled from <a href = http://insideairbnb.com/get-the-data.html target=_blank>AirBnB website</a>." +
 				"<br><br>Click the legend title to change the visualisation property. Double click the ZCTA segment to show only the listings in that zipcode area, double click again to reset view" +
 				"<br><br>When hovering over the listing, the details of the listing will be shown on a tooltip along with the 100 closest attractions that is based on <a href = https://developer.here.com/documentation/maps/topics/discovering-places.html target=_blank>HERE Map</a> is shown." +
