@@ -10,7 +10,7 @@
 	supervised_learning_experiments/ - Supervised Learning & Experiments:
 		This module contain the source code necessary to reproduce the experiments that is mentioned in our final report.
 
-	The following two sections will guide to setup and this three module. There are also a README.md under CODE/. If you encounter any trouble runung the code, please refer to the README.md and try again following its instruction.
+	The following two sections will guide to setup and this three module. There are also a README.md under CODE/. If you encounter any trouble running the code, please refer to the README.md and try again following its instruction.
 
 2. Installation:
 	Host Interface Module:
@@ -20,7 +20,7 @@
 
 	User Visualization Module:
 		1. Github.io has been setup to run the web-based program for the user without them having to do anything else.
-		2. If prefer to run locally, run a local server to the user_visualization directory. Using [http.server]					(https://www.npmjs.com/package/http-server) is one way to setup local server in your computer.
+		2. If prefer to run locally, run a local server to the user_visualization directory. Using [http.server]					(https://www.npmjs.com/package/http-server) is one way to setup local server on your computer.
 		
 	Supervised Learning & Experiments:
 		Make sure the combined1.csv dataset is under the same folder with the scripts.
@@ -37,9 +37,6 @@
 	User Visualization Module:
 		1. Open the [Github.io](https://asaj3.github.io/) link using Chrome or Safari browser.
 		2. To run locally, after setting up your local server, open the url http://localhost:8080/index.html using Chrome or 				Safari browser.
-		
-		
-		
 
 	Supervised Learning & Experiments:
 		Under supervised_learning_experiments/, run the script files with no argument to reprouce the experiment results, the example command is as follow: 
