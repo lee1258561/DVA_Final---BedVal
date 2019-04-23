@@ -34,4 +34,15 @@ It has been tested to work well with Chrome and Safari.
 
 
 ## Supervised Learning & Experiment
-Make sure the combined1.csv dataset is under the same folder with the scripts. Open a script and run the code, it will generate the results in the Python shell automatically. 
+Make sure the combined1.csv dataset is under the same folder with the scripts. Open a script and run the code, it will generate the results in the Python shell automatically.
+### Setup
+```
+cd supervised_learning_experiments/
+pip install numpy pandas sklearn statsmodels
+```
+### Run
+Under supervised_learning_experiments/, run the script files with no argument to reprouce the experiment results, the example command is as follow: 
+```
+python Experiment.py
+```
+
