@@ -426,7 +426,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 		.on('mouseover', function(d) {if (flag2) { if (flag1) {
 			d3.select(this).attr("fill-opacity","0"); tip1.show(d)}}
 			})
-		.on('mouseout', function(d) {if (svgFlag1) {if (flag2) {if (flag1) {if (map.getZoom()<=15){d3.select(this).attr("fill-opacity","0.9")}}}; tip1.hide(d);}})
+		.on('mouseout', function(d) {if (svgFlag1) {if (flag2) {if (flag1) {if (map.getZoom()<=15){d3.select(this).attr("fill-opacity","0.9")}}};} tip1.hide(d);})
 
 	// define the data points based on the listing data
 	var points = g.append("g")
