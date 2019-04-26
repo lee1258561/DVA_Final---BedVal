@@ -67,10 +67,12 @@
 <script>
  
  
-var flag = true;
+var flag1 = true;
 var flag2 = true;
 var flag3 = true;
 var flag4 = true;
+var flag5 = true;
+
 var counter = 0;
 var attr_markers = [];
 
@@ -93,7 +95,13 @@ map.doubleClickZoom.disable();
 var svg = d3.select(map.getPanes().overlayPane).append("svg");
 var g = svg.append("g").attr("class", "leaflet-zoom-hide");
 
-
+// define attraction markers control
+var layerMarkers = L.layerGroup().addTo(map);
+var overlay = {'Attraction Markers': layerMarkers};
+L.control.layers(null,overlay,{collapsed:false}).addTo(map);
+map.on('overlayadd', function() {flag5 = true});
+map.on('overlayremove', function() {flag5 = false});
+			
 // define the promise functions
 var promises = [d3.json("lib/combine-topo.json"),				//the TopoJSON map of San Francisco and Airbnb coordinates
 				d3.csv("lib/SanFran_data.csv"),					//the AirBnB datasets
@@ -151,7 +159,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 		if (active.node() === this) return reset_zoom();
 		active.classed("active", false);
 		active = d3.select(this).classed("active", true);
-		flag = false;
+		flag1 = false;
 		tip2.hide()
 		
 		svg.selectAll("text").remove()
@@ -172,7 +180,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 	
 	// define the zooming out function
 	function reset_zoom() {
-		flag = true;
+		flag1 = true;
 		flag2 = true;
 		active.classed("active", false);
 		active = d3.select(null);
@@ -191,54 +199,60 @@ function ready([sf, data, host_attr, attr, icon]) {
 
 		tip2.show(d)
 		if (flag2) {
+
+			layerMarkers.clearLayers();
 			d3.select(".leaflet-marker-pane").selectAll("img").remove()
 			d3.select(this).attr("class","coord-highlight").attr("r","10px")
-
 
 			var host_ele = JSON.parse(host_attr.find(function(element){ if (element.host_id == d.properties.id) {return element}}).attractions)
 			var attr_ele = []
 			var popup = []
 
-			for (var i = 0; i < host_ele.length; i++) {
+			// only populate attraction markers if selection is true
+			if (flag5) {
+				for (var i = 0; i < host_ele.length; i++) {
 
-				attr_ele[i] = attr.find(function(element){ if (element.id == host_ele[i][0]) {return element}})
-				var icon_url = icon.find(function(element){if (element.cat == attr_ele[i].cat) {return element}}).url
+				
+					attr_ele[i] = attr.find(function(element){ if (element.id == host_ele[i][0]) {return element}})
+					var icon_url = icon.find(function(element){if (element.cat == attr_ele[i].cat) {return element}}).url
 
 
-				popup[i] = L.popup({maxWidth:500,offset:[0,0]})
-					.setContent('<center><b>' +
-					attr_ele[i]["name"] + '</b><br>' + 
-					attr_ele[i]["cat"] + '<br>Distance from selected host : ' + 
-					host_ele[i][1] + 'm<br>Location : <a href="https://www.google.com/maps/dir/' + 
-					JSON.parse(attr_ele[i].coordinates)[1] + "," + JSON.parse(attr_ele[i].coordinates)[0] + "/" + 
-					d.geometry.coordinates[1] + "," + d.geometry.coordinates[0] + '" target="_blank">' + 
-					JSON.parse(attr_ele[i].coordinates)[1] + "," + JSON.parse(attr_ele[i].coordinates)[0] + '</a><br>Opening Hours<br>' + 
-					attr_ele[i]["hours"] + '</center>');
+					popup[i] = L.popup({maxWidth:500,offset:[0,0]})
+						.setContent('<center><b>' +
+						attr_ele[i]["name"] + '</b><br>' + 
+						attr_ele[i]["cat"] + '<br>Distance from selected host : ' + 
+						host_ele[i][1] + 'm<br>Location : <a href="https://www.google.com/maps/dir/' + 
+						JSON.parse(attr_ele[i].coordinates)[1] + "," + JSON.parse(attr_ele[i].coordinates)[0] + "/" + 
+						d.geometry.coordinates[1] + "," + d.geometry.coordinates[0] + '" target="_blank">' + 
+						JSON.parse(attr_ele[i].coordinates)[1] + "," + JSON.parse(attr_ele[i].coordinates)[0] + '</a><br>Opening Hours<br>' + 
+						attr_ele[i]["hours"] + '</center>');
 
-				attr_markers[i] = L.marker([JSON.parse(attr_ele[i].coordinates)[1],JSON.parse(attr_ele[i].coordinates)[0]],{
-						icon: L.icon({
-							iconUrl:icon_url,
-							iconSize: [32, 37],
-							iconAnchor: [16, 37],
-							popupAnchor: [-2, -45]})
-						,riseOnHover:'false',opacity:0.7}).addTo(map);
+					attr_markers[i] = L.marker([JSON.parse(attr_ele[i].coordinates)[1],JSON.parse(attr_ele[i].coordinates)[0]],{
+							icon: L.icon({
+								iconUrl:icon_url,
+								iconSize: [32, 37],
+								iconAnchor: [16, 37],
+								popupAnchor: [-2, -45]})
+							,riseOnHover:'false',opacity:0.7}).addTo(map);
 		
-				attr_markers[i].bindPopup(popup[i]);
-				attr_markers[i].on('click', function() {
-					this.openPopup();
-					tip2.hide();
-					if (flag3)
-						flag3 = false;
-					else
-						flag3 = true;
-				});
-				attr_markers[i].on('mouseover', function() { 
-					this.openPopup();
-					tip2.hide(); });
-				attr_markers[i].on('mouseout', function() {
-					if (flag3)
-						this.closePopup(); 
-				});
+					attr_markers[i].bindPopup(popup[i]);
+					attr_markers[i].on('click', function() {
+						this.openPopup();
+						tip2.hide();
+						if (flag3)
+							flag3 = false;
+						else
+							flag3 = true;
+					});
+					attr_markers[i].on('mouseover', function() { 
+						this.openPopup();
+						tip2.hide(); });
+					attr_markers[i].on('mouseout', function() {
+						if (flag3)
+							this.closePopup(); 
+					});
+					layerMarkers.addLayer(attr_markers[i]);
+				}
 			}
 		}
 	}
@@ -256,7 +270,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 		} 
 		
 		else {
-			if (flag) {
+			if (flag1) {
 				flag2 = true
 				reset()
 			}
@@ -280,22 +294,22 @@ function ready([sf, data, host_attr, attr, icon]) {
 		.attr("stroke", "#003399")
 		.attr("stroke-width", "1.5px")
 		.on("dblclick", mapClick)
-		.on('mouseover', function(d) {if (flag2) { if (flag) {
+		.on('mouseover', function(d) {if (flag2) { if (flag1) {
 			d3.select(this).attr("fill-opacity","0"); tip1.show(d)}}
 			})
-		.on('mouseout', function(d) {if (flag2) {if (flag) {if (map.getZoom()<=15){d3.select(this).attr("fill-opacity","0.9")}}}; tip1.hide(d);})
+		.on('mouseout', function(d) {if (flag2) {if (flag1) {if (map.getZoom()<=15){d3.select(this).attr("fill-opacity","0.9")}}}; tip1.hide(d);})
 
 	// define the data points based on the listing data
 	var points = g.append("g")
 		.selectAll("circle")
 		.data(topojson.feature(sf, sf.objects.host).features)
 		.enter().append("circle")
-		.attr("r", function(d) {if (flag) {return "3px"} else {return "10px"}})
-		.attr("class", function(d) {if (flag) {return "coord"} else {return "coord-zoom"}})
+		.attr("r", function(d) {if (flag1) {return "3px"} else {return "10px"}})
+		.attr("class", function(d) {if (flag1) {return "coord"} else {return "coord-zoom"}})
 		.on("click", pointClick)
 		.on('mouseover', pointHover)
 		.on('mouseout', function(d,i) {if (flag2) {if (map.getZoom() > 15) {d3.select(this).attr("class","coord-zoom").attr("r","10px")}
-										else if(map.getZoom() <= 15 && flag == true) {d3.select(this).attr("class","coord").attr("r","3px")}
+										else if(map.getZoom() <= 15 && flag1 == true) {d3.select(this).attr("class","coord").attr("r","3px")}
 										else {d3.select(this).attr("class","coord-zoom").attr("r","10px")};
 											 tip2.hide(d,i)}})
 
@@ -307,7 +321,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 
 	// zoom to mouse position on double click
 	map.on("dblclick", function(e) {
-		if (flag==false)
+		if (flag1==false)
 			map.setView(new L.LatLng(e.latlng.lat,e.latlng.lng),14);
 	})
 
@@ -325,6 +339,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 		
 		// define the function that will update the color scale based on the properties selected
 		function prop(ctr) {
+			flag4 = false;
 			if (ctr == 0) 
 				counter = 1
 			else if (ctr == 1)
@@ -380,12 +395,12 @@ function ready([sf, data, host_attr, attr, icon]) {
 						applyLatLngToLayer(d).y + ")";});
 
 		  
-		if (map.getZoom() > 15 && flag == true && flag2 == true) {
+		if (map.getZoom() > 15 && flag1 == true && flag2 == true) {
 			svg.selectAll("circle").attr("class","coord-zoom").attr("r","10px")
 			svg.selectAll("path").attr("fill-opacity",0.1).attr("stroke-width", "3px")
 		}
 
-		else if (map.getZoom() <= 15 && flag == true && flag2 == true) {
+		else if (map.getZoom() <= 15 && flag1 == true && flag2 == true) {
 			svg.selectAll("circle").attr("class","coord").attr("r","3px")
 			svg.selectAll("path").attr("fill-opacity",0.9).attr("stroke-width", "1.5px")
 		}
@@ -430,7 +445,6 @@ function ready([sf, data, host_attr, attr, icon]) {
 					.attr("font-size",20)
 					.text("CLICK HERE")
 					.on("click",function() {prop(counter)});
-				flag4 = false;
 			}
 			
 			else {
