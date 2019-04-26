@@ -199,8 +199,8 @@ function ready([sf, data, host_attr, attr, icon]) {
 
 		tip2.show(d)
 		if (flag2) {
-
-			layerMarkers.clearLayers();
+			
+			layerMarkers.clearLayers();		//remove old markers
 			d3.select(".leaflet-marker-pane").selectAll("img").remove()
 			d3.select(this).attr("class","coord-highlight").attr("r","10px")
 
@@ -251,7 +251,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 						if (flag3)
 							this.closePopup(); 
 					});
-					layerMarkers.addLayer(attr_markers[i]);
+					layerMarkers.addLayer(attr_markers[i]);		//create new markers
 				}
 			}
 		}
@@ -259,7 +259,58 @@ function ready([sf, data, host_attr, attr, icon]) {
 	
 	// define the event function when the datapoint is clicked
 	function pointClick(d) {
-	
+		
+			var host_ele = JSON.parse(host_attr.find(function(element){ if (element.host_id == d.properties.id) {return element}}).attractions)
+			var attr_ele = []
+			var popup = []
+
+			if (flag5 == false) {
+				layerMarkers.clearLayers();		//remove old markers
+				for (var i = 0; i < host_ele.length; i++) {
+
+				
+					attr_ele[i] = attr.find(function(element){ if (element.id == host_ele[i][0]) {return element}})
+					var icon_url = icon.find(function(element){if (element.cat == attr_ele[i].cat) {return element}}).url
+
+
+					popup[i] = L.popup({maxWidth:500,offset:[0,0]})
+						.setContent('<center><b>' +
+						attr_ele[i]["name"] + '</b><br>' + 
+						attr_ele[i]["cat"] + '<br>Distance from selected host : ' + 
+						host_ele[i][1] + 'm<br>Location : <a href="https://www.google.com/maps/dir/' + 
+						JSON.parse(attr_ele[i].coordinates)[1] + "," + JSON.parse(attr_ele[i].coordinates)[0] + "/" + 
+						d.geometry.coordinates[1] + "," + d.geometry.coordinates[0] + '" target="_blank">' + 
+						JSON.parse(attr_ele[i].coordinates)[1] + "," + JSON.parse(attr_ele[i].coordinates)[0] + '</a><br>Opening Hours<br>' + 
+						attr_ele[i]["hours"] + '</center>');
+
+					attr_markers[i] = L.marker([JSON.parse(attr_ele[i].coordinates)[1],JSON.parse(attr_ele[i].coordinates)[0]],{
+							icon: L.icon({
+								iconUrl:icon_url,
+								iconSize: [32, 37],
+								iconAnchor: [16, 37],
+								popupAnchor: [-2, -45]})
+							,riseOnHover:'false',opacity:0.7}).addTo(map);
+		
+					attr_markers[i].bindPopup(popup[i]);
+					attr_markers[i].on('click', function() {
+						this.openPopup();
+						tip2.hide();
+						if (flag3)
+							flag3 = false;
+						else
+							flag3 = true;
+					});
+					attr_markers[i].on('mouseover', function() { 
+						this.openPopup();
+						tip2.hide(); });
+					attr_markers[i].on('mouseout', function() {
+						if (flag3)
+							this.closePopup(); 
+					});
+					layerMarkers.addLayer(attr_markers[i]);		//create new markers
+				}
+			}
+			
 		tip2.show(d)
 		
 		if (flag2) {
@@ -270,6 +321,8 @@ function ready([sf, data, host_attr, attr, icon]) {
 		} 
 		
 		else {
+			if (flag5 == false)
+				d3.select(".leaflet-marker-pane").selectAll("img").remove()
 			if (flag1) {
 				flag2 = true
 				reset()
