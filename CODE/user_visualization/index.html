@@ -100,8 +100,8 @@ var g = svg.append("g").attr("class", "leaflet-zoom-hide");
 var layerMarkers = L.layerGroup().addTo(map);
 var overlay = {'Attraction Markers': layerMarkers};
 L.control.layers(null,overlay,{collapsed:false}).addTo(map);
-map.on('overlayadd', function() {flag5 = true});
-map.on('overlayremove', function() {flag5 = false});
+map.on('overlayadd', function(layer,overlay) {flag5 = true});
+map.on('overlayremove', function(layer,overlay) {flag5 = false});
 			
 // define the promise functions
 var promises = [d3.json("lib/combine-topo.json"),				//the TopoJSON map of San Francisco and Airbnb coordinates
@@ -162,10 +162,12 @@ function ready([sf, data, host_attr, attr, icon]) {
 		active = d3.select(this).classed("active", true);
 		flag1 = false;
 		tip2.hide()
-		
+		if (flag6 == false) {
+			flag6 = true
+			map.removeLayer(layerMarkers);
+			}
 		svg.selectAll("text").remove()
 		svg.selectAll(".legend").remove()
-		d3.select(".leaflet-marker-pane").selectAll("img").remove()
 		svg.selectAll("path").attr("fill-opacity",0.7).attr("stroke-width", "2px")
 		
 		d3.select(this).attr("fill-opacity",0)
@@ -183,6 +185,10 @@ function ready([sf, data, host_attr, attr, icon]) {
 	function reset_zoom() {
 		flag1 = true;
 		flag2 = true;
+		if (flag6 == false) {
+		flag6 = true
+			map.removeLayer(layerMarkers);
+		}
 		active.classed("active", false);
 		active = d3.select(null);
 		svg.selectAll("circle")
@@ -272,6 +278,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 			var popup = []
 
 			if (flag5 == false) {
+				map.removeLayer(layerMarkers);
 				layerMarkers.clearLayers();		//remove old markers
 				for (var i = 0; i < host_ele.length; i++) {
 
@@ -316,6 +323,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 				}
 				if (flag6) {
 				map.addLayer(layerMarkers);
+				flag5 = true;
 				flag6 = false;
 				}
 			}
