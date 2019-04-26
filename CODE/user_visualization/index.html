@@ -72,6 +72,7 @@ var flag2 = true;
 var flag3 = true;
 var flag4 = true;
 var flag5 = true;
+var flag6 = true;
 
 var counter = 0;
 var attr_markers = [];
@@ -212,10 +213,8 @@ function ready([sf, data, host_attr, attr, icon]) {
 			if (flag5) {
 				for (var i = 0; i < host_ele.length; i++) {
 
-				
 					attr_ele[i] = attr.find(function(element){ if (element.id == host_ele[i][0]) {return element}})
 					var icon_url = icon.find(function(element){if (element.cat == attr_ele[i].cat) {return element}}).url
-
 
 					popup[i] = L.popup({maxWidth:500,offset:[0,0]})
 						.setContent('<center><b>' +
@@ -260,6 +259,14 @@ function ready([sf, data, host_attr, attr, icon]) {
 	// define the event function when the datapoint is clicked
 	function pointClick(d) {
 		
+		tip2.show(d)
+		
+		if (flag2) {
+			flag2 = false; 
+			svg.selectAll("circle").attr("class","hide-coord").attr("r","0px")
+			svg.selectAll("path").attr("fill-opacity","0.2")
+			d3.select(this).attr("class","coord-highlight").attr("r","10px")
+			
 			var host_ele = JSON.parse(host_attr.find(function(element){ if (element.host_id == d.properties.id) {return element}}).attractions)
 			var attr_ele = []
 			var popup = []
@@ -268,10 +275,8 @@ function ready([sf, data, host_attr, attr, icon]) {
 				layerMarkers.clearLayers();		//remove old markers
 				for (var i = 0; i < host_ele.length; i++) {
 
-				
 					attr_ele[i] = attr.find(function(element){ if (element.id == host_ele[i][0]) {return element}})
 					var icon_url = icon.find(function(element){if (element.cat == attr_ele[i].cat) {return element}}).url
-
 
 					popup[i] = L.popup({maxWidth:500,offset:[0,0]})
 						.setContent('<center><b>' +
@@ -290,7 +295,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 								iconAnchor: [16, 37],
 								popupAnchor: [-2, -45]})
 							,riseOnHover:'false',opacity:0.7}).addTo(map);
-		
+	
 					attr_markers[i].bindPopup(popup[i]);
 					attr_markers[i].on('click', function() {
 						this.openPopup();
@@ -309,20 +314,18 @@ function ready([sf, data, host_attr, attr, icon]) {
 					});
 					layerMarkers.addLayer(attr_markers[i]);		//create new markers
 				}
+				if (flag6) {
+				map.addLayer(layerMarkers);
+				flag6 = false;
+				}
 			}
-			
-		tip2.show(d)
-		
-		if (flag2) {
-			flag2 = false; 
-			svg.selectAll("circle").attr("class","hide-coord").attr("r","0px")
-			svg.selectAll("path").attr("fill-opacity","0.2")
-			d3.select(this).attr("class","coord-highlight").attr("r","10px")
 		} 
 		
 		else {
-			if (flag5 == false)
-				d3.select(".leaflet-marker-pane").selectAll("img").remove()
+			if (flag5 == true && flag6 == false) {
+				map.removeLayer(layerMarkers);
+				flag6 = true;
+			}
 			if (flag1) {
 				flag2 = true
 				reset()
