@@ -91,7 +91,7 @@ var osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 // define the leaflet map
 var map = L.map('map')
 	.addLayer(osmTiles)
-	.setView(new L.LatLng(37.76074, -122.43952),13);
+	.setView(new L.LatLng(37.76074, -122.40952),13);
 
 // disabling the default double click to zoom
 map.doubleClickZoom.disable(); 
@@ -119,7 +119,7 @@ L.easyButton({states: [{
 								map.addLayer(layerMarkers);
 								map.addLayer(SVGLayers);
 								map.addLayer(listingPoints);
-								map.setView(new L.LatLng(37.76074, -122.43952),13)}
+								map.setView(new L.LatLng(37.76074, -122.40952),13)}
 		}]
 	}).addTo(map);
 
@@ -254,7 +254,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 				.attr("r","3px")
 		}
 		tip2.hide()
-		map.setView(new L.LatLng(37.76074, -122.43952),13);
+		map.setView(new L.LatLng(37.76074, -122.40952),13);
 		reset()
 		flag2 = true
 	}
