@@ -9,6 +9,9 @@
 	<script src="lib/d3-tip.min.js"></script>
 	<script src="lib/d3-scale-chromatic.v1.min.js"></script>
 	<script src="lib/topojson.v2.min.js"></script>
+	<link rel="stylesheet" href="lib/easy-button.css"/>
+	<script src="lib/easy-button.js"></script>
+
 
   
   <style>
@@ -61,7 +64,7 @@
 	  stroke: #003399;
 	  stroke-width: 1.5px;
 	}
-  
+	
 </style>
 <div id="map"></div>
 <script>
@@ -73,7 +76,8 @@ var flag3 = true;
 var flag4 = true;
 var flag5 = true;
 var flag6 = true;
-
+var svgFlag1 = true;
+var svgFlag2 = true;
 var counter = 0;
 var attr_markers = [];
 
@@ -98,11 +102,27 @@ var g = svg.append("g").attr("class", "leaflet-zoom-hide");
 
 // define attraction markers control
 var layerMarkers = L.layerGroup().addTo(map);
-var overlay = {'Attraction Markers': layerMarkers};
+var SVGLayers = L.layerGroup().addTo(map);
+var listingPoints = L.layerGroup().addTo(map);
+
+// define the Leaflet overlay control
+var overlay = {'Attraction Markers': layerMarkers,'SVG Layers': SVGLayers, 'Listing Points':listingPoints};
 L.control.layers(null,overlay,{collapsed:false}).addTo(map);
-map.on('overlayadd', function(layer,overlay) {flag5 = true});
-map.on('overlayremove', function(layer,overlay) {flag5 = false});
-			
+
+// define Reset button
+L.easyButton({states: [{
+		stateName: 'resetView',
+		icon: '&#x25cf',
+		iconAnchor: [10, 10],
+		title: 'Reset view',
+		onClick: function(){flag1=true;flag2=true;flag3=true;flag5=true;flag6=true;
+								map.addLayer(layerMarkers);
+								map.addLayer(SVGLayers);
+								map.addLayer(listingPoints);
+								map.setView(new L.LatLng(37.76074, -122.43952),13)}
+		}]
+	}).addTo(map);
+
 // define the promise functions
 var promises = [d3.json("lib/combine-topo.json"),				//the TopoJSON map of San Francisco and Airbnb coordinates
 				d3.csv("lib/SanFran_data.csv"),					//the AirBnB datasets
@@ -115,6 +135,36 @@ Promise.all(promises).then(ready)
 
 function ready([sf, data, host_attr, attr, icon]) {
 				
+				
+	// define the leaflet control events (on check)		
+	map.on('overlayadd', function(layer,overlay) {
+		if (layer.name == 'Attraction Markers') {
+			flag5 = true
+		}
+		else if (layer.name == 'SVG Layers') {
+			svgFlag1 = true
+			d3.selectAll("path").attr("fill-opacity",0.9)
+		}
+		else if (layer.name == 'Listing Points') {
+			svgFlag2 = true
+			reset()
+		}
+	});
+	
+	// define the leaflet control events (on uncheck)
+	map.on('overlayremove', function(layer,overlay) {
+		if (layer.name == 'Attraction Markers') {
+			flag5 = false
+		}
+		else if (layer.name == 'SVG Layers') {
+			svgFlag1 = false
+			d3.selectAll("path").attr("fill-opacity",0)
+		}
+		else if (layer.name == 'Listing Points') {
+			svgFlag2 = false
+			d3.selectAll("circle").attr("r",0)
+		}
+	});
 				
 	// define the tooltip for the ZCTA segment
 	var tip1 = d3.tip()
@@ -157,28 +207,33 @@ function ready([sf, data, host_attr, attr, icon]) {
 	active = d3.select(null);
 	// define the zooming in function
 	function mapClick(d) {
-		if (active.node() === this) return reset_zoom();
-		active.classed("active", false);
-		active = d3.select(this).classed("active", true);
-		flag1 = false;
-		tip2.hide()
-		if (flag6 == false) {
-			flag6 = true
-			map.removeLayer(layerMarkers);
-			}
-		svg.selectAll("text").remove()
-		svg.selectAll(".legend").remove()
-		svg.selectAll("path").attr("fill-opacity",0.7).attr("stroke-width", "2px")
+		if ((svgFlag1 && svgFlag2) || active.node() === this) {
+			if (active.node() === this) return reset_zoom();
+			active.classed("active", false);
+			active = d3.select(this).classed("active", true);
+			flag1 = false;
+			tip2.hide()
+			if (flag6 == false) {
+				flag6 = true
+				map.removeLayer(layerMarkers);
+				}
+			svg.selectAll("text").remove()
+			svg.selectAll(".legend").remove()
+			if (svgFlag1)
+				svg.selectAll("path").attr("fill-opacity",0.7).attr("stroke-width", "2px")
 		
-		d3.select(this).attr("fill-opacity",0)
-		var zip = d.id
-
-		svg.selectAll("circle")
-		.attr("class", function(d) {if (d.properties.zipcode == zip){return "coord-zoom"}
-			else {return "hide-coord"};})
-		.attr("r", function(d) {if (d.properties.zipcode == zip){return "10px"}
-			else {return "0px"};})
-		flag2 = true
+			d3.select(this).attr("fill-opacity",0)
+			var zip = d.id
+		
+			if (svgFlag2) {
+				svg.selectAll("circle")
+				.attr("class", function(d) {if (d.properties.zipcode == zip){return "coord-zoom"}
+					else {return "hide-coord"};})
+				.attr("r", function(d) {if (d.properties.zipcode == zip){return "10px"}
+					else {return "0px"};})
+			}
+			flag2 = true
+		}
 	}
 	
 	// define the zooming out function
@@ -191,10 +246,13 @@ function ready([sf, data, host_attr, attr, icon]) {
 		}
 		active.classed("active", false);
 		active = d3.select(null);
-		svg.selectAll("circle")
+		if (svgFlag1)
+			svg.selectAll("path").attr("fill-opacity",0.9)
+		if (svgFlag2) {
+			svg.selectAll("circle")
 				.attr("class","coord")
 				.attr("r","3px")
-		svg.selectAll("path").attr("fill-opacity",0.9)
+		}
 		tip2.hide()
 		map.setView(new L.LatLng(37.76074, -122.43952),13);
 		reset()
@@ -243,6 +301,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 					attr_markers[i].bindPopup(popup[i]);
 					attr_markers[i].on('click', function() {
 						this.openPopup();
+						tip1.hide();
 						tip2.hide();
 						if (flag3)
 							flag3 = false;
@@ -251,6 +310,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 					});
 					attr_markers[i].on('mouseover', function() { 
 						this.openPopup();
+						tip1.hide();
 						tip2.hide(); });
 					attr_markers[i].on('mouseout', function() {
 						if (flag3)
@@ -269,8 +329,11 @@ function ready([sf, data, host_attr, attr, icon]) {
 		
 		if (flag2) {
 			flag2 = false; 
-			svg.selectAll("circle").attr("class","hide-coord").attr("r","0px")
-			svg.selectAll("path").attr("fill-opacity","0.2")
+			if (svgFlag1)
+				svg.selectAll("path").attr("fill-opacity","0.2")
+			if (svgFlag2)
+				svg.selectAll("circle").attr("class","hide-coord").attr("r","0px")
+				
 			d3.select(this).attr("class","coord-highlight").attr("r","10px")
 			
 			var host_ele = JSON.parse(host_attr.find(function(element){ if (element.host_id == d.properties.id) {return element}}).attractions)
@@ -340,11 +403,13 @@ function ready([sf, data, host_attr, attr, icon]) {
 			}
 			else {
 				var zip = d.properties.zipcode
-				svg.selectAll("circle")
-					.attr("class", function(d) {if (d.properties.zipcode == zip){return "coord-zoom"}
-						else {return "hide-coord"};})
-				.attr("r", function(d) {if (d.properties.zipcode == zip){return "10px"}
-						else {return "0px"};})
+				if (svgFlag2) {
+					svg.selectAll("circle")
+						.attr("class", function(d) {if (d.properties.zipcode == zip){return "coord-zoom"}
+							else {return "hide-coord"};})
+					.attr("r", function(d) {if (d.properties.zipcode == zip){return "10px"}
+							else {return "0px"};})
+				}
 				flag2 = true
 			}
 		}
@@ -361,7 +426,7 @@ function ready([sf, data, host_attr, attr, icon]) {
 		.on('mouseover', function(d) {if (flag2) { if (flag1) {
 			d3.select(this).attr("fill-opacity","0"); tip1.show(d)}}
 			})
-		.on('mouseout', function(d) {if (flag2) {if (flag1) {if (map.getZoom()<=15){d3.select(this).attr("fill-opacity","0.9")}}}; tip1.hide(d);})
+		.on('mouseout', function(d) {if (svgFlag1) {if (flag2) {if (flag1) {if (map.getZoom()<=15){d3.select(this).attr("fill-opacity","0.9")}}}; tip1.hide(d);}})
 
 	// define the data points based on the listing data
 	var points = g.append("g")
@@ -460,13 +525,17 @@ function ready([sf, data, host_attr, attr, icon]) {
 
 		  
 		if (map.getZoom() > 15 && flag1 == true && flag2 == true) {
-			svg.selectAll("circle").attr("class","coord-zoom").attr("r","10px")
-			svg.selectAll("path").attr("fill-opacity",0.1).attr("stroke-width", "3px")
+			if (svgFlag1)
+				svg.selectAll("path").attr("fill-opacity",0.1).attr("stroke-width", "3px")
+			if (svgFlag2)
+				svg.selectAll("circle").attr("class","coord-zoom").attr("r","10px")
 		}
 
 		else if (map.getZoom() <= 15 && flag1 == true && flag2 == true) {
-			svg.selectAll("circle").attr("class","coord").attr("r","3px")
-			svg.selectAll("path").attr("fill-opacity",0.9).attr("stroke-width", "1.5px")
+			if (svgFlag1)
+				svg.selectAll("path").attr("fill-opacity",0.9).attr("stroke-width", "1.5px")
+			if (svgFlag2)
+				svg.selectAll("circle").attr("class","coord").attr("r","3px")
 		}
 	
 		if (map.getZoom() == 13)
@@ -582,8 +651,6 @@ function ready([sf, data, host_attr, attr, icon]) {
 				.tickValues(tickRange))
 				.select(".domain")
 				.remove();
-				
-
 		}	
 	}
          
